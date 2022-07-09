@@ -1,71 +1,88 @@
 
-const {execProcedure } = require("../config/db");
+const asyncHandler = require("../middleware/asyncHandler")
+
+const {execProcedure, getQueryDB } = require("../config/db");
 
 //Route: /default/students
 //Method: PUT
 
-exports.pushStudents = (req, res, next) =>{
+exports.pushStudents = async (req, res, next) => { //DONE
 
     const defaultStudents = [
         {
             name: "Adwil Rafael",
             lastName: "Castillo García",
-            career: "Ingeniería en sistemas computacionales",
+            id: "1161609",
+            career: "1",
+        },
+        {
+            name: "John Albert",
+            lastName: "Wick",
+            id: "1171707",
+            career: "1",
         },
 
     ]
-    console.log("YEZ")
 
+    for (const student of defaultStudents) {
+
+        try {
+             await execProcedure(`insertStudent('${student.name}', '${student.lastName}', '${student.id}', '${student.career}')`);
+               
+           } catch (errorCode) {
+   
+               return res.status(400).json({
+                   success: false,
+                   data: {
+                       error: errorMessage(errorCode),
+                       errorCode
+                       }
+               });
+   
+           }
+    }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
 };
-/**
- * 
-CREATE TABLE terceros(
-    idtercero INT PRIMARY KEY,
-    nombre VARCHAR(255)
-); 
-CREATE TABLE personas(
-    idpersona INT,
-    apellido VARCHAR(255),
-    PRIMARY KEY(idpersona),
-    FOREIGN KEY(idpersona) REFERENCES terceros(idtercero)
-);
-CREATE TABLE estudiantes(
-    idestudiante INT,
-    idcarrera INT,
-            Matricula?
-    PRIMARY KEY(idestudiante),
-    FOREIGN KEY(idestudiante) REFERENCES personas(idpersona),
-    FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
-); 
 
- */
-exports.pushCareers = (req, res, next) =>{
+exports.pushCareers = async (req, res, next) => { //DONE
 
     const defaultCareers = [
         {
             name: "Ingeniería en Sistemas Computacionales",
             type: "Arquitectura e Ingeniería",
-            status: "1"
         },
 
     ]
 
+    for (const career of defaultCareers) {
+
+        try {
+             await execProcedure(`insertCareer('${career.name}', '${career.type}')`);
+           } catch (errorCode) {
+   
+               return res.status(400).json({
+                   success: false,
+                   data: {
+                       error: errorMessage(errorCode),
+                       errorCode
+                       }
+               });
+   
+           }
+    }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
 
 };
 
-/**
-
-CREATE TABLE carreras(
-    idcarrera INT,
-    PRIMARY KEY(idcarrera),
-    FOREIGN KEY(idcarrera) REFERENCES terceros(idtercero),
-    tipo VARCHAR(255),
-    estado TINYINT
-); 
-
- */
-
-exports.pushEmployees = async (req, res, next) =>{ //DONE
+exports.pushEmployees = async (req, res, next) => { //DONE
 
     const defaultEmployees = [
         {
@@ -83,99 +100,92 @@ exports.pushEmployees = async (req, res, next) =>{ //DONE
     ];
 
     for (const employee of defaultEmployees) {
-        await execProcedure(`insertEmployee('${employee.name}', '${employee.lastName}')`);
+
+        try {
+             await execProcedure(`insertEmployee('${employee.name}', '${employee.lastName}')`);
+               
+           } catch (errorCode) {
+   
+               return res.status(400).json({
+                   success: false,
+                   data: {
+                       error: errorMessage(errorCode),
+                       errorCode
+                       }
+               });
+   
+           }
     }
 
-    res.status(200).json({
+    res.status(201).json({
         success: true,
+        data: {}
     });
 
-
 };
-/***
-    DELIMITER &&  
-    CREATE PROCEDURE insertEmployee (IN nombre varchar(255), IN apellido varchar(255))  
-    BEGIN  
+
+exports.pushUsers = async (req, res, next) => { //DONE 
+    //Create an user for each student / employee
+    const defaultUsers = [];
+
+    //get students
+    const students = await getQueryDB("SELECT idestudiante, matricula FROM `estudiantes`");
+    //get employees
+    const employees = await getQueryDB("SELECT emp.idempleado, t.nombre FROM `empleados` as emp join terceros as t on t.idtercero = emp.idempleado");
+
     
-        insert into terceros (`nombre`) values (nombre); 
-        SET @terId = LAST_INSERT_ID();
 
-        insert into personas (`idpersona`, `apellido`) values (@terId, apellido);
+    students.forEach(student => {
+        defaultUsers.push({userId: student.idestudiante, username: student.matricula, 
+                           psw: student.matricula, type: "user"});
+    }); 
+
+    employees.forEach(employee => {
+        defaultUsers.push({userId: employee.idempleado, username: employee.nombre.split(" ")[0].toLowerCase() + employee.idempleado, 
+                           psw: "admin", type: "admin"});
+    }); 
+
+
+    if(defaultUsers.length < 1){
         
-        insert into empleados (`idempleado`) values (@terId);
+        res.status(400).json({
+            success: false,
+            data: "No existen estudiantes ni empleados para la creación de usuarios.",
+        });
+        
+        return;
+    }
 
-    END &&  
-    DELIMITER ;  
- */
-/**
- 
-CREATE TABLE terceros(
-    idtercero INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(255)
-); 
-CREATE TABLE personas(
-    idpersona INT,
-    apellido VARCHAR(255),
-    PRIMARY KEY(idpersona),
-    FOREIGN KEY(idpersona) REFERENCES terceros(idtercero)
-);
-CREATE TABLE empleados(
-    idempleado INT,
-    PRIMARY KEY (idempleado),
-    FOREIGN KEY (idempleado) REFERENCES personas(idpersona)
-);
- */
-
-exports.pushUsers = async (req, res, next) =>{
-
-    const defaultUsers = [
-        {
-            userId: "1", //empleado o estudiante x
-            username: "admin",
-            psw: "admin",
-            type: "admin"
-        },
-        {
-            userId: "2", 
-            username: "1161609",
-            psw: "123",
-            type: "user"
-        },
-    ]
 
 
     for (const user of defaultUsers) {
-       await execProcedure(`insertUser('${user.userId}', '${user.username}', '${user.psw}', '${user.type}')`);
+        
+        try {
+            await  execProcedure(`insertUser('${user.userId}', '${user.username}', '${user.psw}', '${user.type}')`)
+            
+        } catch (errorCode) {
+
+            return res.status(400).json({
+                success: false,
+                data: {
+                    error: errorMessage(errorCode),
+                    errorCode
+                    }
+            });
+
+        }
+        
     }
 
-    res.status(200).json({
+    res.status(201).json({
         success: true,
+        data: {}
     });
 
+ 
 };
 
-/***
-    DELIMITER &&  
-    CREATE PROCEDURE insertUser (IN idusuario INT, IN usuario varchar(255), IN contra varchar(255), IN tipo varchar(255))  
-    BEGIN  
-    
-        insert into usuarios (`idusuario`, `usuario`,`contra`, `tipo`) values (idusuario, usuario, contra, tipo);
-
-    END &&  
-    DELIMITER ;  
-*/
-/**
-CREATE TABLE usuarios(
-    idusuario INT,
-    PRIMARY KEY (idusuario),
-    FOREIGN KEY(idusuario) REFERENCES personas(idpersona),
-    usuario VARCHAR(255),
-    contra VARCHAR(255),
-    tipo VARCHAR(255)
-);
- */ 
-
-exports.pushCampus = (req, res, next) =>{
+exports.pushCampus = async (req, res, next) => { //DONE
 
     const defaultCampus = [
         {
@@ -189,26 +199,46 @@ exports.pushCampus = (req, res, next) =>{
         },
     ]
 
+    for (const campus of defaultCampus) {
+        const address = campus.address;
+        try {
+             await execProcedure(`insertCampus('${campus.name}', '${address.fullAddress}',
+                                               '${address.city}', '${address.province}', '${address.country}')`);
+               
+           } catch (errorCode) {
+   
+               return res.status(400).json({
+                   success: false,
+                   data: {
+                       error: errorMessage(errorCode),
+                       errorCode
+                       }
+               });
+   
+           }
+    }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
 
 };
 
+/**
+  GENERAL GET QUERY
+  
+  SELECT r.idrecinto, t.nombre, dir.linea1, dir.ciudad, dir.provincia, dir.pais  FROM `recintos` as r 
+  join `terceros` as t on t.idtercero = r.idrecinto
+  join `direcciones_terceros` as dirt on dirt.idtercero = r.idrecinto 
+  join direcciones as dir on dir.iddireccion = dirt.iddireccion;
+ */ 
 
-/**x
-CREATE TABLE recintos(
-    idrecinto INT,
-        nombre? o bien referencia a tercero**********
-    iddireccion INT,
-    PRIMARY KEY(idrecinto),
-    FOREIGN KEY (iddireccion) REFERENCES direcciones(iddireccion)
-); 
- CREATE TABLE direcciones(
-    iddireccion INT,
-    linea1 VARCHAR(255),
-    linea2 VARCHAR(255),
-    ciudad VARCHAR(255),
-    provincia VARCHAR(255),
-    pais VARCHAR(255),
-    PRIMARY KEY(iddireccion)
-);
+function errorMessage(errorCode){
 
-*/
+    switch(errorCode){
+        case 1062: return "Clave duplicada";
+
+        default: return "Error del servidor";
+    }
+}

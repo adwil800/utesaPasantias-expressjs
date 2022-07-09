@@ -1,7 +1,12 @@
 const express = require("express");
-const session = require("express-session")
+const session = require("express-session");
+var cors = require('cors');
 
 const app = express();
+app.use(cors({
+    origin: "http://localhost:8080",
+    credentials: true,
+}));
 
 //Import routes
 const defaultData = require("./routes/defaultData");
@@ -21,7 +26,6 @@ app.use(session({
         //secure: true 
     }
 }));
-
 
 //Use routes
 app.use("/default", defaultData); //Used to insert data that's can't be registered through front

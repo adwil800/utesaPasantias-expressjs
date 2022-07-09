@@ -14,7 +14,7 @@ const connectDB = () => {
 
         if(err) throw err;
         //console.log("Connected");
-      });
+    });
 
  
 };
@@ -75,7 +75,7 @@ const execProcedure = (procedure) => {
         con.query("call "+procedure, (err, rows, fields)=> {
             if (err) {
                con.end();
-               return reject(err.sqlMessage);//throw err;
+               return reject(err.errno) 
             }
             else{
                 con.end();
@@ -88,6 +88,6 @@ const execProcedure = (procedure) => {
 
 };
 
-module.exports = {connectDB, getQueryDB, postQueryDB, execProcedure};
+module.exports = {getQueryDB, postQueryDB, execProcedure};
 
 

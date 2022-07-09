@@ -1,0 +1,72 @@
+    DELIMITER &&  
+    CREATE PROCEDURE insertCampus (IN nombre varchar(255), IN dir1 varchar(255), IN ciudad varchar(255),
+                                   IN provincia varchar(255), IN pais varchar(255))  
+    BEGIN  
+    
+        insert into terceros (`nombre`) values (nombre); 
+        SET @terId = LAST_INSERT_ID();
+
+
+        insert into recintos (`idrecinto`) values (@terId);
+        insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudad, provincia, pais);
+        SET @dirId = LAST_INSERT_ID();
+        insert into direcciones_terceros (`iddireccion`, `idtercero`) values (@dirId, @terId);
+
+    END &&  
+    DELIMITER ;  
+
+
+    
+    DELIMITER &&  
+    CREATE PROCEDURE insertUser (IN idusuario INT, IN usuario varchar(255), IN contra varchar(255), IN tipo varchar(255))  
+    BEGIN  
+    
+        insert into usuarios (`idusuario`, `usuario`,`contra`, `tipo`) values (idusuario, usuario, contra, tipo);
+
+    END &&  
+    DELIMITER ;  
+
+
+    
+    DELIMITER &&  
+    CREATE PROCEDURE insertEmployee (IN nombre varchar(255), IN apellido varchar(255))  
+    BEGIN  
+    
+        insert into terceros (`nombre`) values (nombre); 
+        SET @terId = LAST_INSERT_ID();
+
+        insert into personas (`idpersona`, `apellido`) values (@terId, apellido);
+        
+        insert into empleados (`idempleado`) values (@terId);
+
+    END &&  
+    DELIMITER ;  
+
+    
+    DELIMITER &&  
+    CREATE PROCEDURE insertCareer (IN nombre varchar(255), IN tipo varchar(255))  
+    BEGIN  
+
+        insert into terceros (`nombre`) values (nombre); 
+        SET @terId = LAST_INSERT_ID();
+
+        insert into carreras (`idcarrera`, `tipo`, `estado`) values (@terId, tipo, '1');
+
+    END &&  
+    DELIMITER ;  
+
+
+    
+    DELIMITER &&  
+    CREATE PROCEDURE insertStudent (IN nombre varchar(255), IN apellido varchar(255), IN matricula varchar(50), IN carrera int)  
+    BEGIN  
+    
+        insert into terceros (`nombre`) values (nombre); 
+        SET @terId = LAST_INSERT_ID();
+
+        insert into personas (`idpersona`, `apellido`) values (@terId, apellido);
+        
+        insert into estudiantes (`idestudiante`, `idcarrera`, `matricula`) values (@terId, carrera, matricula);
+
+    END &&  
+    DELIMITER ;  

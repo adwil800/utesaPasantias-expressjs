@@ -1,20 +1,32 @@
 const {getQueryDB} = require("../config/db");
-CREATE ERROR HANDLER, SESSIONS ARE COMPLETED
+//CREATE ERROR HANDLER, SESSIONS ARE COMPLETED
 
 exports.login = async (req, res) => {
-    const {username, psw} = req.body;
+    const {username, psw, campusId} = req.body;
+
 
     if(!username || !psw){
-         res.status(400).json({
-            success: true,
-            error: "Usuario o contraseña no proporcionados.",
+         res.status(200).json({
+            success: false,
+            data: "Usuario o contraseña no proporcionados.",
         });
         
         return;
     }
     
     //Get from BD
-    let userData = await getQueryDB(`select * from usuarios where usuario = '${username}'`);
+    let userData = await getQueryDB(`select * from usuarios where usuario = '${username}'`)
+
+        if(userData.length < 1){
+            
+            res.status(200).json({
+                success: false,
+                data: "Usuario o contraseña incorrecto.",
+            });
+            
+            return;
+        }
+
         userData = userData[0];
     //idusuario, usuario, contra, tipo
     
@@ -24,15 +36,15 @@ exports.login = async (req, res) => {
         //Set session data
         req.session.userData = userData;
         res.status(200).json({
-            sucess: true,
-            loggedAs: userData.usuario,
+            success: true,
+            data: userData.usuario,
         });
 
     }else{
         //Wrong credentials
          res.status(200).json({
-            sucess: true,
-            error: "Usuario o contraseña incorrecto.",
+            success: false,
+            data: "Usuario o contraseña incorrecto.",
         });
     }
     
@@ -59,7 +71,7 @@ exports.getMe = (req, res) => {
     if(req.session.userData){
          res.status(200).json({
             success: true,
-            loggedAs: {idusuario, usuario, tipo}
+            data: {idusuario, usuario, tipo}
         });
     }
 
@@ -74,9 +86,9 @@ exports.protectRoute = (req, res, next) => {
         //Usuario autorizado
         next();
     }else{
-        res.status(403).json({
-            success: true,
-            status: "Usuario no detectado."
+        res.status(200).json({
+            success: false,
+            data: "Usuario no detectado."
         });
     }
 
