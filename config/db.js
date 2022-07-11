@@ -1,93 +1,90 @@
 let mysql = require('mysql');
+const pool = mysql.createPool({
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "pasantias",
+    multipleStatements: true,
+});
 
-let con;
-const connectDB = () => {
 
-    con =  mysql.createConnection({
-        host: "localhost",
-        user: "root",
-        password: "",
-        database: "pasantias"
+const testDBConnection = (req, res, next) => {
+    pool.getConnection( (err, connection) => {
+
+        if(err)
+            if(err.fatal){
+                res.status(200).json({success: false, data: "No se pudo establecer conexión con la base de datos"})
+                return;    
+            }
+            
+        next();
+  
     });
+      
+}
 
-    con.connect((err)=>{
 
-        if(err) throw err;
-        //console.log("Connected");
-    });
 
- 
-};
-        
-//Returns json array with rows
 const getQueryDB =  (query) => {
-    connectDB();
-    return new Promise((resolve, reject) => {
 
-        con.query(query, (err, rows, fields)=> {
-            if (err) {
-               con.end();
-               return reject(err.sqlMessage);//throw err;
-            }
-            else{
-                con.end();
-                return resolve(Object.values(JSON.parse(JSON.stringify(rows))));
-                
-            }
-    
-        });
+    return new Promise(( resolve, reject ) => {
 
-    });
-   
+        pool.getConnection( (err, connection) => {
+            
+            connection.query(query, ( err, rows) => {
 
+                if ( err ) {
+                    reject( err );
+                } else {
+                    resolve(Object.values(JSON.parse(JSON.stringify(rows))));
+                }
 
-};
+                connection.release();
 
+            });
 
-
-   //Returns inserte ID as a number
-const postQueryDB = (query) => {
-    connectDB();
-
-    return new Promise((resolve, reject) => {
-
-        con.query(query, (err, rows, fields)=> {
-            if (err) {
-               con.end();
-               return reject(err.sqlMessage);//throw err;
-            }
-            else{
-                con.end();
-                return resolve(rows.insertId);
-            }
-    
         });
 
     });
 
-};
+
+}
+
+
+
    //async to follow the flow of connect -> query -> end connection
 const execProcedure = (procedure) => {
-    connectDB();
-
-    return new Promise((resolve, reject) => {
-
-        con.query("call "+procedure, (err, rows, fields)=> {
-            if (err) {
-               con.end();
-               return reject(err.errno) 
-            }
-            else{
-                con.end();
-                return resolve(rows.insertId);
-            }
+  
     
+    return new Promise(( resolve, reject ) => {
+
+        pool.getConnection( (err, connection) => {
+                
+        
+
+                connection.query("call "+procedure, ( err, rows) => {
+
+                    if ( err ) {
+                        reject( err );
+                    } else {
+                        if(rows.length > 0)
+                            resolve(Object.values(JSON.parse(JSON.stringify(rows[rows.length - 1]))));
+                        else
+                            resolve({success: true})
+                    }
+
+                    connection.release();
+
+                });
+
+
         });
 
     });
 
+
 };
 
-module.exports = {getQueryDB, postQueryDB, execProcedure};
+module.exports = {getQueryDB, execProcedure, testDBConnection};
 
 

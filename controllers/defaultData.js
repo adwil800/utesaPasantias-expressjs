@@ -12,29 +12,42 @@ exports.pushStudents = async (req, res, next) => { //DONE
         {
             name: "Adwil Rafael",
             lastName: "Castillo García",
-            id: "1161609",
+            matricula: "1161609",
             career: "1",
+            recinto: "2",
+
+            cedula: "40213907534",
+            phones: [{number: "8096195358", type: "Movil"}, {number: "8096121758", type: "Casa"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
         },
-        {
-            name: "John Albert",
-            lastName: "Wick",
-            id: "1171707",
-            career: "1",
-        },
+        
 
     ]
 
     for (const student of defaultStudents) {
 
         try {
-             await execProcedure(`insertStudent('${student.name}', '${student.lastName}', '${student.id}', '${student.career}')`);
+                const studentId = await execProcedure(`insertStudent('${student.name}', '${student.lastName}', '${student.matricula}', '${student.career}', '${student.recinto}', 
+                                                                     '${student.cedula}', '${student.address.fullAddress}', '${student.address.city}', 
+                                                                     '${student.address.province}', '${student.address.country}', @studentId); select @studentId;`);
+
+                for (const phone of student.phones) {
+
+                    await execProcedure(`insertPhone('${phone.number}', '${phone.type}', '${studentId[0]["@studentId"]}');`);
+                        
+                }
                
            } catch (errorCode) {
    
-               return res.status(400).json({
+               return res.status(200).json({
                    success: false,
                    data: {
-                       error: errorMessage(errorCode),
+                       error: errorMessage(errorCode.errno),
                        errorCode
                        }
                });
@@ -46,7 +59,7 @@ exports.pushStudents = async (req, res, next) => { //DONE
         success: true,
         data: {}
     });
-};
+}; 
 
 exports.pushCareers = async (req, res, next) => { //DONE
 
@@ -67,7 +80,7 @@ exports.pushCareers = async (req, res, next) => { //DONE
                return res.status(400).json({
                    success: false,
                    data: {
-                       error: errorMessage(errorCode),
+                       error: errorMessage(errorCode.errno),
                        errorCode
                        }
                });
@@ -88,34 +101,62 @@ exports.pushEmployees = async (req, res, next) => { //DONE
         {
             name: "Maria Altagracia",
             lastName: "Jimenez Tavarez",
+            matricula: "1123342",
+            recinto: "2",
+
+            cedula: "4023594962",
+            phones: [{number: "8496578896", type: "Casa"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
         },
         {
             name: "Jose Marcos",
             lastName: "García Lora",
-        },
-        {
-            name: "William Alberto",
-            lastName: "Reyes Sosa",
-        },
+            matricula: "1123343",
+            recinto: "2",
+
+            cedula: "4029845554",
+            phones: [{number: "8295567985", type: "Movil"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
+        } 
     ];
 
     for (const employee of defaultEmployees) {
 
         try {
-             await execProcedure(`insertEmployee('${employee.name}', '${employee.lastName}')`);
+                const employeeId = await execProcedure(`insertEmployee('${employee.name}', '${employee.lastName}', '${employee.matricula}', '${employee.recinto}', 
+                                                                     '${employee.cedula}', '${employee.address.fullAddress}', '${employee.address.city}', 
+                                                                     '${employee.address.province}', '${employee.address.country}', @employeeId); select @employeeId;`);
+
+                for (const phone of employee.phones) {
+
+                    await execProcedure(`insertPhone('${phone.number}', '${phone.type}', '${employeeId[0]["@employeeId"]}');`);
+                        
+                }
                
            } catch (errorCode) {
    
-               return res.status(400).json({
+               return res.status(200).json({
                    success: false,
                    data: {
-                       error: errorMessage(errorCode),
+                       error: errorMessage(errorCode.errno),
                        errorCode
                        }
                });
    
            }
     }
+
+
 
     res.status(201).json({
         success: true,
@@ -129,11 +170,9 @@ exports.pushUsers = async (req, res, next) => { //DONE
     const defaultUsers = [];
 
     //get students
-    const students = await getQueryDB("SELECT idestudiante, matricula FROM `estudiantes`");
+    const students = await getQueryDB("SELECT idestudiante, matricula FROM `estudiantes`;");
     //get employees
-    const employees = await getQueryDB("SELECT emp.idempleado, t.nombre FROM `empleados` as emp join terceros as t on t.idtercero = emp.idempleado");
-
-    
+    const employees = await getQueryDB("SELECT idempleado, matricula FROM `empleados`;");
 
     students.forEach(student => {
         defaultUsers.push({userId: student.idestudiante, username: student.matricula, 
@@ -141,14 +180,13 @@ exports.pushUsers = async (req, res, next) => { //DONE
     }); 
 
     employees.forEach(employee => {
-        defaultUsers.push({userId: employee.idempleado, username: employee.nombre.split(" ")[0].toLowerCase() + employee.idempleado, 
-                           psw: "admin", type: "admin"});
+        defaultUsers.push({userId: employee.idempleado, username: employee.matricula, 
+                           psw: employee.matricula, type: "admin"});
     }); 
-
 
     if(defaultUsers.length < 1){
         
-        res.status(400).json({
+        res.status(200).json({
             success: false,
             data: "No existen estudiantes ni empleados para la creación de usuarios.",
         });
@@ -165,10 +203,10 @@ exports.pushUsers = async (req, res, next) => { //DONE
             
         } catch (errorCode) {
 
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 data: {
-                    error: errorMessage(errorCode),
+                    error: errorMessage(errorCode.errno),
                     errorCode
                     }
             });
@@ -210,7 +248,7 @@ exports.pushCampus = async (req, res, next) => { //DONE
                return res.status(400).json({
                    success: false,
                    data: {
-                       error: errorMessage(errorCode),
+                       error: errorMessage(errorCode.errno),
                        errorCode
                        }
                });
@@ -226,6 +264,13 @@ exports.pushCampus = async (req, res, next) => { //DONE
 };
 
 /**
+    this.pushCareers();
+    this.pushCampus();
+    this.pushEmployees();
+    this.pushStudents();
+    this.pushUsers();
+ */
+/**
   GENERAL GET QUERY
   
   SELECT r.idrecinto, t.nombre, dir.linea1, dir.ciudad, dir.provincia, dir.pais  FROM `recintos` as r 
@@ -238,7 +283,21 @@ function errorMessage(errorCode){
 
     switch(errorCode){
         case 1062: return "Clave duplicada";
+        case 1305: return "El recurso solicitado no existe";
 
         default: return "Error del servidor";
     }
 }
+
+
+
+exports.testRoute = async (req, res, next) => { //DONE
+
+
+       
+    res.status(200).json({
+        success: true,
+        data: "TESTED"
+    });
+};
+ 

@@ -1,0 +1,175 @@
+CREATE TABLE terceros(
+    idtercero INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255)
+); CREATE TABLE personas(
+    idpersona INT,
+    apellido VARCHAR(255),
+    PRIMARY KEY(idpersona),
+    FOREIGN KEY(idpersona) REFERENCES terceros(idtercero)
+); CREATE TABLE adicionales_personas(
+    idpersona INT,
+    FOREIGN KEY(idpersona) REFERENCES personas(idpersona),
+    cedula VARCHAR(255)
+); CREATE TABLE telefonos(
+    idtelefono INT PRIMARY KEY AUTO_INCREMENT,
+    telefono VARCHAR(255)
+); CREATE TABLE telefonos_terceros(
+    idtelefono INT,
+    idtercero INT,
+    FOREIGN KEY(idtelefono) REFERENCES telefonos(idtelefono),
+    FOREIGN KEY(idtercero) REFERENCES terceros(idtercero),
+    tipo VARCHAR(255)
+); CREATE TABLE direcciones(
+    iddireccion INT PRIMARY KEY AUTO_INCREMENT,
+    linea1 VARCHAR(255),
+    linea2 VARCHAR(255),
+    ciudad VARCHAR(255),
+    provincia VARCHAR(255),
+    pais VARCHAR(255)
+); CREATE TABLE direcciones_terceros(
+    iddireccion INT,
+    idtercero INT,
+    FOREIGN KEY(iddireccion) REFERENCES direcciones(iddireccion),
+    FOREIGN KEY(idtercero) REFERENCES terceros(idtercero)
+); CREATE TABLE carreras(
+    idcarrera INT,
+    PRIMARY KEY(idcarrera),
+    FOREIGN KEY(idcarrera) REFERENCES terceros(idtercero),
+    tipo VARCHAR(255),
+    estado TINYINT
+); CREATE TABLE recintos(
+    idrecinto INT PRIMARY KEY,
+    FOREIGN KEY(idrecinto) REFERENCES terceros(idtercero)
+); CREATE TABLE estudiantes(
+    idestudiante INT,
+    idcarrera INT,
+    idrecinto INT,
+    matricula VARCHAR(50) UNIQUE,
+    PRIMARY KEY(idestudiante),
+    FOREIGN KEY(idestudiante) REFERENCES personas(idpersona),
+    FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto),
+    FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
+); CREATE TABLE empresas(
+    idempresa INT,
+    tipo VARCHAR(255),
+    PRIMARY KEY(idempresa),
+    FOREIGN KEY (idempresa) REFERENCES terceros(idtercero),
+    actividad VARCHAR(255)
+); 
+CREATE TABLE representantes_empresas(
+    idrepresentante INT,
+    FOREIGN KEY(idrepresentante) REFERENCES personas(idpersona),
+    idempresa INT,
+    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
+    cargo VARCHAR(255)
+); CREATE TABLE empleados(
+    idempleado INT,
+    idrecinto INT,
+    matricula VARCHAR(255) UNIQUE,
+    PRIMARY KEY (idempleado),
+    FOREIGN KEY (idempleado) REFERENCES personas(idpersona),
+    FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto)
+
+); CREATE TABLE usuarios(
+    idusuario INT,
+    PRIMARY KEY (idusuario),
+    FOREIGN KEY(idusuario) REFERENCES personas(idpersona),
+    usuario VARCHAR(255) UNIQUE,
+    contra VARCHAR(255),
+    tipo VARCHAR(255)
+);
+
+
+CREATE TABLE solicitudes(
+    idsolicitud INT PRIMARY KEY AUTO_INCREMENT,
+    idestudiante INT,
+    FOREIGN KEY(idestudiante) REFERENCES estudiantes(idestudiante),
+    idempresa INT,
+    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
+    numrecibo INT,
+    firma TINYINT,
+    estado VARCHAR(255)
+); CREATE TABLE revisiones_solicitudes(
+    idrevisionsolicitud INT PRIMARY KEY AUTO_INCREMENT,
+    idsolicitud INT,
+    FOREIGN KEY(idsolicitud) REFERENCES solicitudes(idsolicitud),
+    descripcion VARCHAR(255),
+    idusuario INT,
+    FOREIGN KEY(idusuario) REFERENCES usuarios(idusuario)
+); CREATE TABLE formularios(
+    idformulario INT PRIMARY KEY AUTO_INCREMENT,
+    idestudiante INT,
+    FOREIGN KEY(idestudiante) REFERENCES estudiantes(idestudiante),
+    idempresa INT,
+    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
+    fechaemision DATE
+); CREATE TABLE formularios_inicio(
+    idformularioinicio INT,
+    FOREIGN KEY(idformularioinicio) REFERENCES formularios(idformulario),
+    idjefedirecto INT,
+    FOREIGN KEY(idjefedirecto) REFERENCES representantes_empresas(idrepresentante),
+    fechainicio DATE,
+    horario VARCHAR(255),
+    tanda VARCHAR(255),
+    funciones VARCHAR(255),
+    firma TINYINT,
+    estado VARCHAR(255)
+); CREATE TABLE formularios_evaluacion(
+    idformularioev INT,
+    PRIMARY KEY(idformularioev),
+    FOREIGN KEY(idformularioev) REFERENCES formularios(idformulario),
+    nombreevaluador VARCHAR(255),
+    horascompletadas VARCHAR(255),
+    fecha DATE,
+    observaciones VARCHAR(255),
+    firma TINYINT,
+    evaluacionpasantia INT,
+    estado VARCHAR(255),
+    idusuario INT,
+    FOREIGN KEY(idusuario) REFERENCES usuarios(idusuario)
+); CREATE TABLE puntos_evaluacion(
+    idpuntoev INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(255)
+); CREATE TABLE calificacion_evaluacion(
+    idformularioev INT,
+    idpuntoev INT,
+    FOREIGN KEY(idformularioev) REFERENCES formularios_evaluacion(idformularioev),
+    FOREIGN KEY(idpuntoev) REFERENCES puntos_evaluacion(idpuntoev),
+    puntuacion INT
+); CREATE TABLE revisiones_formularios(
+    idrevisionformulario INT PRIMARY KEY AUTO_INCREMENT,
+    idformulario INT,
+    FOREIGN KEY(idformulario) REFERENCES formularios(idformulario),
+    descripcion VARCHAR(255),
+    idusuario INT,
+    FOREIGN KEY(idusuario) REFERENCES usuarios(idusuario)
+);
+
+
+
+CREATE TABLE vacantes_empresas(
+    idempresa INT,
+    idvacante INT PRIMARY KEY AUTO_INCREMENT,
+    idcarrera INT,
+    idrecinto INT,
+    nombre VARCHAR(255),
+    FOREIGN KEY (idempresa) REFERENCES empresas(idempresa),
+    FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto),
+    FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
+);
+CREATE TABLE habilidades(
+    idhabilidad INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(255)
+);
+CREATE TABLE habilidades_vacantes(
+    idhabilidad INT,
+    idvacante INT,
+    FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
+    FOREIGN KEY (idvacante) REFERENCES vacantes_empresas(idvacante)
+);
+CREATE TABLE habilidades_estudiantes(
+    idhabilidad INT,
+    idestudiante INT,
+    FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
+    FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
+);
