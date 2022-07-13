@@ -78,6 +78,8 @@
             
             insert into estudiantes (`idestudiante`, `idcarrera`, `idrecinto`, `matricula`) values (@terId, carrera, idrecinto, matricula);
 
+            insert into adicionales_estudiantes(`idestudiante`) values (@terId);
+
             insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudad, provincia, pais);
             SET @dirId = LAST_INSERT_ID();
             insert into direcciones_terceros (`iddireccion`, `idtercero`) values (@dirId, @terId);

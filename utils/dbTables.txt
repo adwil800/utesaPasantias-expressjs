@@ -49,6 +49,11 @@ CREATE TABLE terceros(
     FOREIGN KEY(idestudiante) REFERENCES personas(idpersona),
     FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto),
     FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
+); CREATE TABLE adicionales_estudiantes(
+     idestudiante INT,
+    FOREIGN KEY(idestudiante) REFERENCES estudiantes (idestudiante),
+    bolsaempleos TINYINT(1),
+    tipopasantia TINYINT(1)
 ); CREATE TABLE empresas(
     idempresa INT,
     tipo VARCHAR(255),
@@ -159,7 +164,9 @@ CREATE TABLE vacantes_empresas(
 );
 CREATE TABLE habilidades(
     idhabilidad INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(255)
+    idcarrera INT,
+    nombre VARCHAR(255),
+    FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
 );
 CREATE TABLE habilidades_vacantes(
     idhabilidad INT,
@@ -173,3 +180,4 @@ CREATE TABLE habilidades_estudiantes(
     FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
     FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
 );
+

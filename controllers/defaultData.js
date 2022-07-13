@@ -1,7 +1,6 @@
 
-const asyncHandler = require("../middleware/asyncHandler")
 
-const {execProcedure, getQueryDB } = require("../config/db");
+const {execProcedure, getQueryDB, queryDB } = require("../config/db");
 
 //Route: /default/students
 //Method: PUT
@@ -44,13 +43,13 @@ exports.pushStudents = async (req, res, next) => { //DONE
                
            } catch (errorCode) {
    
-               return res.status(200).json({
-                   success: false,
-                   data: {
-                       error: errorMessage(errorCode.errno),
-                       errorCode
-                       }
-               });
+            return res.status(200).json({
+                success: false,
+                data: {
+                    error: errorMessage(errorCode.errno),
+                    message: errorCode.sqlMessage
+                    }
+            });
    
            }
     }
@@ -74,16 +73,16 @@ exports.pushCareers = async (req, res, next) => { //DONE
     for (const career of defaultCareers) {
 
         try {
-             await execProcedure(`insertCareer('${career.name}', '${career.type}')`);
+            await  execProcedure(`insertCareer('${career.name}', '${career.type}')`);
            } catch (errorCode) {
    
-               return res.status(400).json({
-                   success: false,
-                   data: {
-                       error: errorMessage(errorCode.errno),
-                       errorCode
-                       }
-               });
+            return res.status(200).json({
+                success: false,
+                data: {
+                    error: errorMessage(errorCode.errno),
+                    message: errorCode.sqlMessage
+                    }
+            });
    
            }
     }
@@ -145,13 +144,13 @@ exports.pushEmployees = async (req, res, next) => { //DONE
                
            } catch (errorCode) {
    
-               return res.status(200).json({
-                   success: false,
-                   data: {
-                       error: errorMessage(errorCode.errno),
-                       errorCode
-                       }
-               });
+            return res.status(200).json({
+                success: false,
+                data: {
+                    error: errorMessage(errorCode.errno),
+                    message: errorCode.sqlMessage
+                    }
+            });
    
            }
     }
@@ -199,7 +198,7 @@ exports.pushUsers = async (req, res, next) => { //DONE
     for (const user of defaultUsers) {
         
         try {
-            await  execProcedure(`insertUser('${user.userId}', '${user.username}', '${user.psw}', '${user.type}')`)
+            await execProcedure(`insertUser('${user.userId}', '${user.username}', '${user.psw}', '${user.type}')`)
             
         } catch (errorCode) {
 
@@ -207,7 +206,7 @@ exports.pushUsers = async (req, res, next) => { //DONE
                 success: false,
                 data: {
                     error: errorMessage(errorCode.errno),
-                    errorCode
+                    message: errorCode.sqlMessage
                     }
             });
 
@@ -240,18 +239,57 @@ exports.pushCampus = async (req, res, next) => { //DONE
     for (const campus of defaultCampus) {
         const address = campus.address;
         try {
-             await execProcedure(`insertCampus('${campus.name}', '${address.fullAddress}',
+            await execProcedure(`insertCampus('${campus.name}', '${address.fullAddress}',
                                                '${address.city}', '${address.province}', '${address.country}')`);
                
            } catch (errorCode) {
    
-               return res.status(400).json({
-                   success: false,
-                   data: {
-                       error: errorMessage(errorCode.errno),
-                       errorCode
-                       }
-               });
+            return res.status(200).json({
+                success: false,
+                data: {
+                    error: errorMessage(errorCode.errno),
+                    message: errorCode.sqlMessage
+                    }
+            });r
+   
+           }
+    }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+exports.pushSkills = async (req, res, next) => { //DONE
+
+    const defaultSkills = [
+        {
+            skillName: "C++",
+            career: "1"
+        },
+        {
+            skillName: "Javascript",
+            career: "1"
+        },
+        {
+            skillName: "Html & css",
+            career: "1"
+        },
+    ]
+
+    for (const skill of defaultSkills) {
+        try {
+                await queryDB(`insert into habilidades (idcarrera, nombre) values ('${skill.career}', '${skill.skillName}')`);
+           } catch (errorCode) {
+                return res.status(200).json({
+                    success: false,
+                    data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode.sqlMessage
+                        }
+                });
    
            }
     }

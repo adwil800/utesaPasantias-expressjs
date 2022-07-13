@@ -35,15 +35,16 @@ exports.login = async (req, res) => {
 
 
         //Get user name and lastname
-        let userInfo = await getQueryDB(`select t.nombre, p.apellido from estudiantes as e 
-        join terceros as t on e.idestudiante = t.idtercero join personas as p 
-        on e.idestudiante = p.idpersona where e.idestudiante = '${userData.idusuario}';`)
+        let userInfo = await getQueryDB(`select t.nombre, p.apellido from terceros as t 
+        join personas as p on t.idtercero = p.idpersona where t.idtercero = '${userData.idusuario}';`)
         
+
         userData["nombre"] = userInfo[0].nombre;
         userData["apellido"] = userInfo[0].apellido;
 
         //Remove password from object after validation 
         delete userData.contra;
+
 
         //Set session data
         req.session.userData = userData;

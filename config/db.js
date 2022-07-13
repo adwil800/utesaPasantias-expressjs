@@ -17,6 +17,7 @@ const testDBConnection = (req, res, next) => {
                 return;    
             }
             
+        connection.release();
         next();
   
     });
@@ -85,6 +86,32 @@ const execProcedure = (procedure) => {
 
 };
 
-module.exports = {getQueryDB, execProcedure, testDBConnection};
+
+
+const queryDB =  (query) => {
+
+    return new Promise(( resolve, reject ) => {
+
+        pool.getConnection( (err, connection) => {
+            
+            connection.query(query, ( err, rows) => {
+
+                if ( err ) {
+                    reject( err );
+                } else {
+                    resolve({success: true});
+                }
+
+                connection.release();
+
+            });
+
+        });
+
+    });
+
+
+}
+module.exports = {getQueryDB, execProcedure, testDBConnection, queryDB};
 
 

@@ -1,4 +1,4 @@
-const { getQueryDB } = require("../config/db");
+const { getQueryDB, queryDB } = require("../config/db");
 
 
 
@@ -6,22 +6,33 @@ exports.getStudentInformation = async (req, res) => {
 
     const studentId = req.session.userData.idusuario;
 
-    const general = await getQueryDB(`select t.nombre, p.apellido, e.matricula, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
-                  join estudiantes as e on t.idtercero = e.idestudiante
-                  join direcciones_terceros as dt on t.idtercero = dt.idtercero
-                  join personas as p on e.idestudiante = p.idpersona
-                  join direcciones as d on dt.iddireccion = d.iddireccion where t.idtercero = '${studentId}';`);
+    const general = await getQueryDB(` select t.nombre, p.apellido, e.matricula, ae.bolsaempleos, ae.tipopasantia, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
+    join estudiantes as e on t.idtercero = e.idestudiante
+    join direcciones_terceros as dt on t.idtercero = dt.idtercero
+    join personas as p on e.idestudiante = p.idpersona
+    join adicionales_estudiantes as ae on ae.idestudiante = e.idestudiante
+    join direcciones as d on dt.iddireccion = d.iddireccion where t.idtercero = '${studentId}';`);
+
 
     const phones = await getQueryDB(`select tel.telefono  from telefonos_terceros as tt join telefonos as tel on tt.idtelefono = tel.idtelefono
                   join terceros as t on t.idtercero = tt.idtercero where t.idtercero = '${studentId}';`);
-    const career = await getQueryDB(`select t.nombre from terceros as t 
+    const career = await getQueryDB(`select t.nombre, e.idcarrera from terceros as t 
                   join estudiantes as e on t.idtercero = e.idcarrera where e.idestudiante = '${studentId}';`);
     
     
     
+    
     let studentInformation = general[0];
+
+        if(!studentInformation.bolsaempleos) studentInformation.bolsaempleos = 0;
+        if(!studentInformation.tipopasantia) studentInformation.tipopasantia = 0;
+        
+        studentInformation.bolsaempleos == '0' ? studentInformation.bolsaempleos = false : studentInformation.bolsaempleos = true;
+        studentInformation.nombre = studentInformation.nombre.toUpperCase();
+        studentInformation.apellido = studentInformation.apellido.toUpperCase();
         studentInformation["telefonos"] = phones;
-        studentInformation["carrera"] = career[0].nombre;
+        studentInformation["carrera"] = career[0].nombre.toUpperCase();
+        studentInformation["idcarrera"] = career[0].idcarrera;
                 
    
     res.status(200).json({
@@ -97,3 +108,33 @@ CREATE TABLE formularios_inicio(
   */
 
 
+
+exports.updateStudentBemp = async (req, res) => {
+    const studentId = req.session.userData.idusuario;
+    const {isBemp} = req.body;
+    const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
+
+
+    if(updateBemp.success){
+        return res.status(200).json({
+            success: true,
+            data: {}
+        })
+    }
+
+};
+
+
+exports.updateStudentTpasantia = async (req, res) => {
+    const studentId = req.session.userData.idusuario;
+    const {tipopasantia} = req.body;
+    const updateTpasantia = await queryDB(`UPDATE adicionales_estudiantes set tipopasantia = '${tipopasantia}' where idestudiante = '${studentId}';`);
+
+    if(updateTpasantia.success){
+        return res.status(200).json({
+            success: true,
+            data: {}
+        })
+    }
+
+};
