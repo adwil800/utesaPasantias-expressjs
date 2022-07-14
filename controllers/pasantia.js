@@ -1,8 +1,83 @@
-const { getQueryDB, queryDB } = require("../config/db");
+const { getQueryDB, queryDB, execProcedure} = require("../config/db");
+
+
+exports.requestPasantia = async (req, res) => {
+
+//Request statuses:
+//onHold: User is pending to provide receiptNumber
+//pending: User is waiting for approval from admin
+//onGoing? || completed?: 
+
+    const studentId = req.session.userData.idusuario;
+
+    const {requestData} = req.body;
+    let requestStatus = "onHold";
+
+    if(requestData.receiptNumber.trim().length === 0){
+        //Set null : pending for user input, request is on hold
+        requestData.receiptNumber = null;
+        requestStatus = "onHold";
+
+    }else{
+        requestStatus = "pending";
+    }
+
+    if(requestData.type.trim() === "Otras"){
+        requestData.type = requestData.otherType;
+    }
+
+
+    //Look for an existing request to update everything if required:
+
+
+    const idsolicitud = await getQueryDB(` select * from solicitudes where idestudiante = '${studentId}'`);
+    if(idsolicitud.length > 0){
+
+        uPDATE REQUEST SOlicitud
+
+    }
+    else{ //If new request
+        
+        try {
+            await execProcedure(`insertRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}',
+                                                    '${requestData.tutorName}', '${studentId}', ${requestData.receiptNumber}, 
+                                                    '1', '${requestStatus}');`);
+        } catch (errorCode) {
+                console.log(errorCode)
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    }
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+/*
 
 
 
-exports.getStudentInformation = async (req, res) => {
+
+*/
+
+
+
+
+
+
+
+
+exports.getStudentInformation = async (req, res) => { //DONE
 
     const studentId = req.session.userData.idusuario;
 
@@ -46,70 +121,7 @@ exports.getStudentInformation = async (req, res) => {
 
 }
 
-
-exports.requestPasantia = (req, res) => {
-
-};
-
- /*
-
-CREATE TABLE solicitudes(
-    idsolicitud INT PRIMARY KEY AUTO_INCREMENT,
-    idestudiante INT,
-    FOREIGN KEY(idestudiante) REFERENCES estudiantes(idestudiante),
-    idempresa INT,
-    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
-    numrecibo INT,
-    firma TINYINT,
-    estado VARCHAR(255)
-);
-
-
-CREATE TABLE empresas(
-    idempresa INT,
-    tipo VARCHAR(255),
-    PRIMARY KEY(idempresa),
-    FOREIGN KEY (idempresa) REFERENCES terceros(idtercero),
-    actividad VARCHAR(255)
-); 
-CREATE TABLE representantes_empresas(
-    idrepresentante INT,
-    FOREIGN KEY(idrepresentante) REFERENCES personas(idpersona),
-    idempresa INT,
-    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
-    cargo VARCHAR(255)
-); 
-
-
-
-CREATE TABLE formularios(
-    idformulario INT PRIMARY KEY AUTO_INCREMENT,
-    idestudiante INT,
-    FOREIGN KEY(idestudiante) REFERENCES estudiantes(idestudiante),
-    idempresa INT,
-    FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
-    fechaemision DATE
-); 
-
-CREATE TABLE formularios_inicio(
-    idformularioinicio INT,
-    FOREIGN KEY(idformularioinicio) REFERENCES formularios(idformulario),
-    idjefedirecto INT,
-    FOREIGN KEY(idjefedirecto) REFERENCES representantes_empresas(idrepresentante),
-    fechainicio DATE,
-    horario VARCHAR(255),
-    tanda VARCHAR(255),
-    funciones VARCHAR(255),
-    firma TINYINT,
-    estado VARCHAR(255)
-);
-
-
-  */
-
-
-
-exports.updateStudentBemp = async (req, res) => {
+exports.updateStudentBemp = async (req, res) => { //DONE
     const studentId = req.session.userData.idusuario;
     const {isBemp} = req.body;
     const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
@@ -119,13 +131,17 @@ exports.updateStudentBemp = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: {}
-        })
+        });
     }
+
+    res.status(200).json({
+        success: true,
+        data: "Algo salió mal"
+    });
 
 };
 
-
-exports.updateStudentTpasantia = async (req, res) => {
+exports.updateStudentTpasantia = async (req, res) => { //DONE
     const studentId = req.session.userData.idusuario;
     const {tipopasantia} = req.body;
     const updateTpasantia = await queryDB(`UPDATE adicionales_estudiantes set tipopasantia = '${tipopasantia}' where idestudiante = '${studentId}';`);
@@ -134,7 +150,24 @@ exports.updateStudentTpasantia = async (req, res) => {
         return res.status(200).json({
             success: true,
             data: {}
-        })
+        });
     }
 
+    res.status(200).json({
+        success: true,
+        data: "Algo salió mal"
+    });
 };
+
+
+
+function errorMessage(errorCode){
+
+    switch(errorCode){
+        case 1146: return "Tabla inexistente";
+        case 1062: return "Clave duplicada";
+        case 1305: return "El recurso solicitado no existe";
+
+        default: return "Error del servidor";
+    }
+}

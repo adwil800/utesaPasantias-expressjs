@@ -101,3 +101,39 @@
 
         END &&  
     DELIMITER ;  
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE insertRequestData (IN nombre varchar(255), IN tipo varchar(255), IN telefono varchar(255), IN direccion varchar(255), IN encargado varchar(255), IN idestudiante int, IN numrecibo varchar(255), IN firma TINYINT, IN estado varchar(255))  
+BEGIN  
+
+    insert into terceros (`nombre`) values (nombre); 
+    SET @terId = LAST_INSERT_ID();
+
+    insert into empresas (`idempresa`, `tipo`) values (@terId, tipo);
+
+
+    insert into terceros (`nombre`) values (encargado); 
+    SET @terIdRep = LAST_INSERT_ID();
+    insert into personas (`idpersona`) values (@terIdRep); 
+
+
+    insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+
+    insert into telefonos (`telefono`) values (telefono);
+    SET @telId = LAST_INSERT_ID();
+
+    insert into telefonos_terceros(`idtelefono`, `idtercero`) values (@telId, @terId);
+
+
+    insert into direcciones(`linea1`) values (direccion);
+    SET @dirId = LAST_INSERT_ID();
+    insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
+
+
+    insert into solicitudes(`idestudiante`, `idempresa`, `numrecibo`, `firma`, `estado`) values (idestudiante, @terId, numrecibo, firma, estado);
+
+
+END &&  
+DELIMITER ;  

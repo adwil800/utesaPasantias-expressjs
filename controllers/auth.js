@@ -100,7 +100,8 @@ exports.protectRoute = (req, res, next) => {
     }else{
         res.status(200).json({
             success: false,
-            data: "Usuario no detectado."
+            isLoggedIn: false,
+            data: "La sesión ha expirado"
         });
     }
 

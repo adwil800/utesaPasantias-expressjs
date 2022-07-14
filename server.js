@@ -24,13 +24,13 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: { 
-        maxAge: 2000//3600000,
+        maxAge: 3600000,
         //secure: true 
     }
 }));
 
 const {testDBConnection} = require("./config/db");
-const sessionChecker = require("./middleware/sessionChecker");
+const {protectRoute} = require("./controllers/auth");
 
 //Middleware
 app.use(testDBConnection); 
@@ -38,8 +38,8 @@ app.use(testDBConnection);
 
 //Use routes
 app.use("/api/default", defaultData); //Used to insert data that's can't be registered through front
-app.use("/api/pasantia", sessionChecker, pasantia);
-app.use("/api/bemp", sessionChecker, bemp);
+app.use("/api/pasantia", protectRoute, pasantia);
+app.use("/api/bemp", protectRoute, bemp);
 app.use("/api/auth", auth);
 
 

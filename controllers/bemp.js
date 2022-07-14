@@ -66,7 +66,7 @@ exports.getStudentSkills = async (req, res) => { //DONE
 
     res.status(200).json({
         success: false,
-        data: {}
+        data: ""
     })
 
 };

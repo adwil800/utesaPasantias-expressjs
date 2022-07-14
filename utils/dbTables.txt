@@ -91,7 +91,7 @@ CREATE TABLE solicitudes(
     FOREIGN KEY(idestudiante) REFERENCES estudiantes(idestudiante),
     idempresa INT,
     FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
-    numrecibo INT,
+    numrecibo varchar(255),
     firma TINYINT,
     estado VARCHAR(255)
 ); CREATE TABLE revisiones_solicitudes(
@@ -180,4 +180,3 @@ CREATE TABLE habilidades_estudiantes(
     FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
     FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
 );
-
