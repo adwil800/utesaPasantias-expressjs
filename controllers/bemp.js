@@ -4,9 +4,8 @@ const { getQueryDB, queryDB } = require("../config/db");
 
 exports.addStudentSkill = async (req, res) => { //DONE
 
-    const studentId = req.session.userData.idusuario;
 
-    const {skillId} = req.body;
+    const {skillId, studentId} = req.body;
     
     try {
         await queryDB(`insert into habilidades_estudiantes (idhabilidad, idestudiante) values ('${skillId}', '${studentId}');`);
@@ -29,9 +28,8 @@ exports.addStudentSkill = async (req, res) => { //DONE
 
 exports.removeStudentSkills = async (req, res) => { //DONE
 
-    const studentId = req.session.userData.idusuario;
 
-    const {skillId} = req.query;
+    const {skillId, studentId} = req.query;
     try {
         await queryDB(`delete from habilidades_estudiantes where idhabilidad = '${skillId}' && idestudiante = '${studentId}';`);
     } catch (errorCode) {
@@ -53,8 +51,8 @@ exports.removeStudentSkills = async (req, res) => { //DONE
 
 exports.getStudentSkills = async (req, res) => { //DONE
 
-    const studentId = req.session.userData.idusuario;
 
+    const {studentId} = req.query;
     const skills = await getQueryDB(`select idhabilidad as skillId from habilidades_estudiantes where idestudiante = '${studentId}'`);
 
     if(skills.length > 0){
@@ -73,14 +71,13 @@ exports.getStudentSkills = async (req, res) => { //DONE
 
 exports.getStudentSkill = async (req, res) => { //DONE
  
-    const studentId = req.session.userData.idusuario;
-    const {skillId} = req.query;
+    const {skillId, studentId} = req.query;
     const skills = await getQueryDB(`select idhabilidad as skillId from habilidades_estudiantes where idestudiante = '${studentId}' and idhabilidad = '${skillId}'`);
 
     if(skills.length > 0){
         return res.status(200).json({
             success: true,
-            data: skills
+            data: skills[0]
         })
     }
 

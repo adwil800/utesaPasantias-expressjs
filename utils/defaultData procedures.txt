@@ -137,3 +137,36 @@ BEGIN
 
 END &&  
 DELIMITER ;  
+
+
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE updateRequestData (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255),
+                IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
+                IN numrecibo varchar(255), IN estado varchar(255),
+                IN idsolicitud int)  
+BEGIN  
+
+    set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitud);
+
+    UPDATE `terceros` SET `nombre` = nombreEmpresa WHERE idtercero = @idempresa;
+    UPDATE `empresas` SET `tipo` = tipoEmpresa WHERE idempresa = @idempresa;
+
+    set @idrep = (select idrepresentante from representantes_empresas where idempresa = @idempresa);
+    UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
+
+    set @idtel = (select idtelefono from telefonos_terceros where idtercero = @idempresa);
+    UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;
+
+
+    
+    set @iddir = (select iddireccion from direcciones_terceros where idtercero = @idempresa);
+    UPDATE `direcciones` SET `linea1` = direccionEmpresa WHERE iddireccion = @iddir;
+
+    
+    UPDATE `solicitudes` SET `numrecibo` = numrecibo,`estado` = estado WHERE idsolicitud = idsolicitud;
+
+END &&  
+DELIMITER ;  

@@ -16,11 +16,12 @@ const defaultData = require("./routes/defaultData");
 const pasantia = require("./routes/pasantia");
 const auth = require("./routes/auth");
 const bemp = require("./routes/bemp");
+const student = require("./routes/student");
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json({limit: "1mb"}));
 app.use(session({
-    secret: "somethingKey",
+    secret: "somethingKeyUltraRareabcd",
     resave: false,
     saveUninitialized: true,
     cookie: { 
@@ -41,6 +42,7 @@ app.use("/api/default", defaultData); //Used to insert data that's can't be regi
 app.use("/api/pasantia", protectRoute, pasantia);
 app.use("/api/bemp", protectRoute, bemp);
 app.use("/api/auth", auth);
+app.use("/api/student", protectRoute, student);
 
 
 port = 5500;

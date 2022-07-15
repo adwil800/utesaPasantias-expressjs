@@ -24,6 +24,22 @@ exports.pushStudents = async (req, res, next) => { //DONE
                 country: "República Dominicana"
             } 
         },
+        {
+            name: "John Mike",
+            lastName: "Sins",
+            matricula: "1161611",
+            career: "1",
+            recinto: "2",
+
+            cedula: "40213907534",
+            phones: [{number: "8096195358", type: "Movil"}, {number: "8096121758", type: "Casa"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
+        },
         
 
     ]
@@ -42,14 +58,15 @@ exports.pushStudents = async (req, res, next) => { //DONE
                 }
                
            } catch (errorCode) {
-   
+            continue;
+            /** 
             return res.status(200).json({
                 success: false,
                 data: {
                     error: errorMessage(errorCode.errno),
                     message: errorCode.sqlMessage
                     }
-            });
+            });*/
    
            }
     }
@@ -202,19 +219,21 @@ exports.pushUsers = async (req, res, next) => { //DONE
             
         } catch (errorCode) {
 
+            continue;
+            /**
             return res.status(200).json({
                 success: false,
                 data: {
                     error: errorMessage(errorCode.errno),
                     message: errorCode.sqlMessage
                     }
-            });
+            }); */
 
         }
         
     }
 
-    res.status(201).json({
+    res.status(200).json({
         success: true,
         data: {}
     });
