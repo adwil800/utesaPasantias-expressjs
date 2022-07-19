@@ -5,7 +5,7 @@ exports.login = async (req, res) => {
     const {username, psw, campusId} = req.body;
 
 
-    if(!username || !psw){
+    if(!username || !psw || !campusId){
          res.status(200).json({
             success: false,
             data: "Usuario o contraseña no proporcionados.",
@@ -16,22 +16,49 @@ exports.login = async (req, res) => {
     
     //Get from BD
     let userData = await getQueryDB(`select * from usuarios where usuario = '${username}';`)
-
         if(userData.length < 1){
             
-            res.status(200).json({
+            return res.status(200).json({
                 success: false,
-                data: "Usuario o contraseña incorrecto.",
+                data: "Usuario o contraseña incorrecto",
             });
-            
-            return;
+
         }
 
         userData = userData[0];
     //idusuario, usuario, contra, tipo
     
-    //logged in
-    if(userData.usuario === username && userData.contra === psw){
+        if(userData.tipo === "user"){
+            let campus = await getQueryDB(`select e.idrecinto from estudiantes as e where e.idestudiante = '${userData.idusuario}';`)
+            if(campus.length > 0){
+                userData["idrecinto"] = campus[0].idrecinto;
+            }else{
+
+                return res.status(200).json({
+                    success: false,
+                    data: "Error del servidor",
+                });
+                
+            }
+        }
+        
+        else if(userData.tipo === "admin"){
+            let campus = await getQueryDB(`select e.idrecinto from empleados as e where e.idempleado = '${userData.idusuario}';`)
+            if(campus.length > 0){
+                userData["idrecinto"] = campus[0].idrecinto;
+            }else{
+
+                return res.status(200).json({
+                    success: false,
+                    data: "Error del servidor",
+                });
+                
+            }
+        }
+
+
+        //logged in
+    if(userData.usuario === username && userData.contra === psw && userData.idrecinto.toString() === campusId.toString()){
 
 
         //Get user name and lastname
@@ -44,7 +71,6 @@ exports.login = async (req, res) => {
 
         //Remove password from object after validation 
         delete userData.contra;
-
 
         //Set session data
         req.session.userData = userData;
@@ -88,9 +114,6 @@ exports.getMe = (req, res) => {
     }
 
 }
-
-
-
 //Only logged in users may access the route
 exports.protectRoute = (req, res, next) => {
 
@@ -111,6 +134,25 @@ exports.protectRoute = (req, res, next) => {
 exports.authorize = (...roles) => {
  
 
+
+}
+
+exports.getCampus = async (req, res) => {
+
+
+    const recintos = await getQueryDB("select r.idrecinto, t.nombre from recintos as r join terceros as t on t.idtercero = r.idrecinto;");
+
+    if(recintos.length > 0){
+        return res.status(200).json({
+            success: true,
+            data: recintos
+        })
+    }
+
+    res.status(200).json({
+        success: false,
+        data: {}
+    })
 
 }
 

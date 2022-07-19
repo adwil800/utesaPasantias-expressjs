@@ -1,14 +1,14 @@
     DELIMITER &&  
-    CREATE PROCEDURE insertCampus (IN nombre varchar(255), IN dir1 varchar(255), IN ciudad varchar(255),
-                                   IN provincia varchar(255), IN pais varchar(255))  
+    CREATE PROCEDURE insertCampus (IN nombrec varchar(255), IN dir1 varchar(255), IN ciudadc varchar(255),
+                                   IN provinciac varchar(255), IN paisc varchar(255))  
     BEGIN  
     
-        insert into terceros (`nombre`) values (nombre); 
+        insert into terceros (`nombre`) values (nombrec); 
         SET @terId = LAST_INSERT_ID();
 
 
         insert into recintos (`idrecinto`) values (@terId);
-        insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudad, provincia, pais);
+        insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudadc, provinciac, paisc);
         SET @dirId = LAST_INSERT_ID();
         insert into direcciones_terceros (`iddireccion`, `idtercero`) values (@dirId, @terId);
 
@@ -18,29 +18,29 @@
 
     
     DELIMITER &&  
-    CREATE PROCEDURE insertUser (IN idusuario INT, IN usuario varchar(255), IN contra varchar(255), IN tipo varchar(255))  
+    CREATE PROCEDURE insertUser (IN idusuariou INT, IN usuariou varchar(255), IN contrau varchar(255), IN tipou varchar(255))  
     BEGIN  
     
-        insert into usuarios (`idusuario`, `usuario`,`contra`, `tipo`) values (idusuario, usuario, contra, tipo);
+        insert into usuarios (`idusuario`, `usuario`,`contra`, `tipo`) values (idusuariou, usuariou, contrau, tipou);
 
     END &&  
     DELIMITER ;  
 
     
     DELIMITER &&  
-    CREATE PROCEDURE insertEmployee (IN nombre varchar(255), IN apellido varchar(255), IN matricula varchar(50), IN idrecinto int, IN cedula varchar(255), IN dir1 varchar(255), IN ciudad varchar(255), IN provincia varchar(255), IN pais varchar(255), OUT idter int)  
+    CREATE PROCEDURE insertEmployee (IN nombree varchar(255), IN apellidoe varchar(255), IN matriculae varchar(50), IN idrecintoe int, IN cedulae varchar(255), IN dir1 varchar(255), IN ciudade varchar(255), IN provinciae varchar(255), IN paise varchar(255), OUT idtere int)  
     BEGIN  
     
-        insert into terceros (`nombre`) values (nombre); 
+        insert into terceros (`nombre`) values (nombree); 
         SET @terId = LAST_INSERT_ID();
-        SET idter = @terId;
+        SET idtere = @terId;
 
-        insert into personas (`idpersona`, `apellido`) values (@terId, apellido);
-        insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedula);
+        insert into personas (`idpersona`, `apellido`) values (@terId, apellidoe);
+        insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedulae);
         
-        insert into empleados (`idempleado`, `idrecinto`, `matricula`) values (@terId, idrecinto, matricula);
+        insert into empleados (`idempleado`, `idrecinto`, `matricula`) values (@terId, idrecintoe, matriculae);
 
-        insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudad, provincia, pais);
+        insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudade, provinciae, paise);
         SET @dirId = LAST_INSERT_ID();
         insert into direcciones_terceros (`iddireccion`, `idtercero`) values (@dirId, @terId);
 
@@ -49,13 +49,13 @@
 
     
     DELIMITER &&  
-    CREATE PROCEDURE insertCareer (IN nombre varchar(255), IN tipo varchar(255))  
+    CREATE PROCEDURE insertCareer (IN nombrec varchar(255), IN tipoc varchar(255))  
     BEGIN  
 
-        insert into terceros (`nombre`) values (nombre); 
+        insert into terceros (`nombre`) values (nombrec); 
         SET @terId = LAST_INSERT_ID();
 
-        insert into carreras (`idcarrera`, `tipo`, `estado`) values (@terId, tipo, '1');
+        insert into carreras (`idcarrera`, `tipo`, `estado`) values (@terId, tipoc, '1');
 
     END &&  
     DELIMITER ;  
@@ -66,21 +66,21 @@
 
 
     DELIMITER &&  
-        CREATE PROCEDURE insertStudent (IN nombre varchar(255), IN apellido varchar(255), IN matricula varchar(50), IN carrera int, IN idrecinto int, IN cedula varchar(255), IN dir1 varchar(255), IN ciudad varchar(255), IN provincia varchar(255), IN pais varchar(255), OUT idter int)  
+        CREATE PROCEDURE insertStudent (IN nombres varchar(255), IN apellidos varchar(255), IN matriculas varchar(50), IN carreras int, IN idrecintos int, IN cedulas varchar(255), IN dir1 varchar(255), IN ciudads varchar(255), IN provincias varchar(255), IN paiss varchar(255), OUT idters int)  
         BEGIN  
         
-            insert into terceros (`nombre`) values (nombre); 
+            insert into terceros (`nombre`) values (nombres); 
             SET @terId = LAST_INSERT_ID();
-            SET idter = @terId;
+            SET idters = @terId;
 
-            insert into personas (`idpersona`, `apellido`) values (@terId, apellido);
-            insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedula);
+            insert into personas (`idpersona`, `apellido`) values (@terId, apellidos);
+            insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedulas);
             
-            insert into estudiantes (`idestudiante`, `idcarrera`, `idrecinto`, `matricula`) values (@terId, carrera, idrecinto, matricula);
+            insert into estudiantes (`idestudiante`, `idcarrera`, `idrecinto`, `matricula`) values (@terId, carreras, idrecintos, matriculas);
 
             insert into adicionales_estudiantes(`idestudiante`) values (@terId);
 
-            insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudad, provincia, pais);
+            insert into direcciones (`linea1`, `ciudad`, `provincia`, `pais`) values (dir1, ciudads, provincias, paiss);
             SET @dirId = LAST_INSERT_ID();
             insert into direcciones_terceros (`iddireccion`, `idtercero`) values (@dirId, @terId);
 
@@ -89,14 +89,14 @@
     DELIMITER ;  
 
     DELIMITER &&  
-        CREATE PROCEDURE insertPhone (IN telefono varchar(255), IN tipotel varchar(255), IN idtercero int)  
+        CREATE PROCEDURE insertPhone (IN telefonot varchar(255), IN tipotelt varchar(255), IN idtercerot int)  
         BEGIN  
         
 
-            insert into telefonos (`telefono`) values (telefono);
+            insert into telefonos (`telefono`) values (telefonot);
             SET @telId = LAST_INSERT_ID();
 
-            insert into telefonos_terceros (`idtelefono`, `idtercero`, `tipo`) values (@telId, idtercero, tipotel);
+            insert into telefonos_terceros (`idtelefono`, `idtercero`, `tipo`) values (@telId, idtercerot, tipotelt);
             
 
         END &&  
@@ -105,34 +105,34 @@
 
 
 DELIMITER &&  
-CREATE PROCEDURE insertRequestData (IN nombre varchar(255), IN tipo varchar(255), IN telefono varchar(255), IN direccion varchar(255), IN encargado varchar(255), IN idestudiante int, IN numrecibo varchar(255), IN firma TINYINT, IN estado varchar(255))  
+CREATE PROCEDURE insertRequestData (IN nombrer varchar(255), IN tipor varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN idestudianter int, IN numrecibor varchar(255), IN firmar TINYINT, IN estador varchar(255))  
 BEGIN  
 
-    insert into terceros (`nombre`) values (nombre); 
+    insert into terceros (`nombre`) values (nombrer); 
     SET @terId = LAST_INSERT_ID();
 
-    insert into empresas (`idempresa`, `tipo`) values (@terId, tipo);
+    insert into empresas (`idempresa`, `tipo`) values (@terId, tipor);
 
 
-    insert into terceros (`nombre`) values (encargado); 
+    insert into terceros (`nombre`) values (encargador); 
     SET @terIdRep = LAST_INSERT_ID();
     insert into personas (`idpersona`) values (@terIdRep); 
 
 
     insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
 
-    insert into telefonos (`telefono`) values (telefono);
+    insert into telefonos (`telefono`) values (telefonor);
     SET @telId = LAST_INSERT_ID();
 
     insert into telefonos_terceros(`idtelefono`, `idtercero`) values (@telId, @terId);
 
 
-    insert into direcciones(`linea1`) values (direccion);
+    insert into direcciones(`linea1`) values (direccionr);
     SET @dirId = LAST_INSERT_ID();
     insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
 
 
-    insert into solicitudes(`idestudiante`, `idempresa`, `numrecibo`, `firma`, `estado`) values (idestudiante, @terId, numrecibo, firma, estado);
+    insert into solicitudes(`idestudiante`, `idempresa`, `numrecibo`, `firma`, `estado`) values (idestudianter, @terId, numrecibor, firmar, estador);
 
 
 END &&  
@@ -145,11 +145,11 @@ DELIMITER ;
 DELIMITER &&  
 CREATE PROCEDURE updateRequestData (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255),
                 IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
-                IN numrecibo varchar(255), IN estado varchar(255),
-                IN idsolicitud int)  
+                IN numrecibor varchar(255), IN estador varchar(255),
+                IN idsolicitudr int)  
 BEGIN  
 
-    set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitud);
+    set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitudr);
 
     UPDATE `terceros` SET `nombre` = nombreEmpresa WHERE idtercero = @idempresa;
     UPDATE `empresas` SET `tipo` = tipoEmpresa WHERE idempresa = @idempresa;
@@ -166,7 +166,27 @@ BEGIN
     UPDATE `direcciones` SET `linea1` = direccionEmpresa WHERE iddireccion = @iddir;
 
     
-    UPDATE `solicitudes` SET `numrecibo` = numrecibo,`estado` = estado WHERE idsolicitud = idsolicitud;
+    UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador WHERE idsolicitud = idsolicitudr;
 
+END &&  
+DELIMITER ;  
+
+
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE insertBempRequestData (IN idestudianter int, numrecibor varchar(255), firmar TINYINT, estador varchar(255))  
+BEGIN  
+    insert into solicitudes (`idestudiante`, `numrecibo`,  `firma`, `estado`) values (idestudianter, numrecibor, firmar, estador);
+END &&  
+DELIMITER ;  
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE updateBempRequestData (IN idsolicitudr int, numrecibor varchar(255), estador varchar(255))  
+BEGIN  
+    UPDATE `solicitudes` SET `numrecibo` = numrecibor, `estado` = estador WHERE idsolicitud = idsolicitudr;
 END &&  
 DELIMITER ;  

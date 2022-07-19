@@ -1,7 +1,154 @@
 const { getQueryDB, queryDB, execProcedure} = require("../config/db");
 
 
-exports.requestPasantia = async (req, res) => {
+
+
+
+
+
+
+
+
+
+
+
+//Request bemp
+exports.requestBempPasantia = async (req, res) => {
+
+    //Request statuses:
+    //onHold: User is pending to provide receiptNumber
+    //pending: User is waiting for approval from admin
+    //onGoing? || completed?: 
+
+    let {receiptNumber, studentId} = req.body;
+    let requestStatus = "onHold";
+
+    if(receiptNumber.trim().length === 0){
+        //Set null : pending for user input, request is on hold
+        receiptNumber = null;
+        requestStatus = "onHold";
+
+    }else{
+        requestStatus = "pending";
+    }
+
+
+        try {
+            await execProcedure(`insertBempRequestData('${studentId}', ${receiptNumber}, '1', '${requestStatus}');`);
+        } catch (errorCode) {
+                console.log(errorCode)
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+}
+
+exports.updateRequestBempPasantia = async (req, res) => {
+
+    //Request statuses:
+    //onHold: User is pending to provide receiptNumber
+    //pending: User is waiting for approval from admin
+    //onGoing? || completed?: 
+
+
+    let {receiptNumber, requestId} = req.body;
+    let requestStatus = "onHold";
+
+    if(receiptNumber.trim().length === 0){
+        //Set null : pending for user input, request is on hold
+        receiptNumber = null;
+        requestStatus = "onHold";
+
+    }else{
+        requestStatus = "pending";
+    }
+
+        try {
+            await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}');`);
+        } catch (errorCode) {
+                console.log(errorCode)
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+}
+
+exports.getStudentBempRequest = async (req, res) => { //DONE
+
+    //Temporary, pass studentId on params
+
+    const {studentId} = req.query;
+
+    const reqData = await getQueryDB(`select idsolicitud as reqId from solicitudes where idestudiante = '${studentId}';`);
+    
+    if(reqData.length > 0){
+
+        return res.status(200).json({
+            success: true,
+            data: reqData[0]
+        })
+    }
+    
+    res.status(200).json({
+
+        success: false,
+        data: {}
+
+    });
+    
+
+
+}
+
+
+//Remove when user has already decided to go for bemp, 
+//returns user to onHold status
+exports.removeStudentBemp = async (req, res) => { //DONE
+    const {isBemp, studentId} = req.body;
+    const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
+    const updateRequest = await queryDB(`UPDATE solicitudes set estado = 'onHold' where idestudiante = '${studentId}';`);
+
+    if(updateBemp.success && updateRequest.success){
+        return res.status(200).json({
+            success: true,
+            data: {}
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        data: "Algo salió mal"
+    });
+
+};
+
+
+
+
+
+
+//Request no bemp
+exports.requestNoBempPasantia = async (req, res) => {
 
 //Request statuses:
 //onHold: User is pending to provide receiptNumber
@@ -12,6 +159,7 @@ exports.requestPasantia = async (req, res) => {
     const {requestData, studentId} = req.body;
     let requestStatus = "onHold";
 
+    console.log("OAKD: ", requestData, studentId) 
     if(requestData.receiptNumber.trim().length === 0){
         //Set null : pending for user input, request is on hold
         requestData.receiptNumber = null;
@@ -48,7 +196,7 @@ exports.requestPasantia = async (req, res) => {
 
 };
 
-exports.updateRequestPasantia = async (req, res) => {
+exports.updateRequestNoBempPasantia = async (req, res) => {
 
     //Request statuses:
     //onHold: User is pending to provide receiptNumber
@@ -57,6 +205,7 @@ exports.updateRequestPasantia = async (req, res) => {
     
         const {requestData} = req.body;
         let requestStatus = "onHold";
+        console.log("OAKD: ", requestData) 
     
         if(requestData.receiptNumber.trim().length === 0){
             //Set null : pending for user input, request is on hold
@@ -76,8 +225,7 @@ exports.updateRequestPasantia = async (req, res) => {
         // UPDATE REQUEST SOlicitud  
 
         try {
-            await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}',
-                                                    '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}');`);
+            await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}');`);
         } catch (errorCode) {
                 console.log(errorCode)
             return res.status(200).json({
@@ -102,7 +250,7 @@ exports.updateRequestPasantia = async (req, res) => {
 
 
 
-exports.getStudentRequest = async (req, res) => { //DONE
+exports.getStudentNoBempRequest = async (req, res) => { //DONE
 
     //Temporary, pass studentId on params
 
@@ -151,7 +299,7 @@ exports.getStudentRequestStatus = async (req, res) => { //DONE
 
     //Temporary, pass studentId on params
     const {studentId} = req.query;
-    const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.estado  as status, ae.bolsaempleos as bemp from solicitudes as s 
+    const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.numrecibo, s.estado as status, ae.bolsaempleos as bemp from solicitudes as s 
     join adicionales_estudiantes as ae on ae.idestudiante = s.idestudiante where s.idestudiante = '${studentId}';`);
     
     if(reqData.length > 0){
@@ -181,7 +329,7 @@ exports.getStudentInformation = async (req, res) => { //DONE
 
     const {studentId} = req.query;
 
-    const general = await getQueryDB(` select t.nombre, p.apellido, e.matricula, ae.bolsaempleos, ae.tipopasantia, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
+    const general = await getQueryDB(` select e.idestudiante, t.nombre, p.apellido, e.matricula, ae.bolsaempleos, ae.tipopasantia, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
     join estudiantes as e on t.idtercero = e.idestudiante
     join direcciones_terceros as dt on t.idtercero = dt.idtercero
     join personas as p on e.idestudiante = p.idpersona

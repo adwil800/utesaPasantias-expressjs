@@ -1,3 +1,4 @@
+ -	Script
 CREATE TABLE terceros(
     idtercero INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(255)
@@ -93,6 +94,7 @@ CREATE TABLE solicitudes(
     FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
     numrecibo varchar(255),
     firma TINYINT,
+    bemp TINYINT,
     estado VARCHAR(255)
 ); CREATE TABLE revisiones_solicitudes(
     idrevisionsolicitud INT PRIMARY KEY AUTO_INCREMENT,
@@ -180,3 +182,4 @@ CREATE TABLE habilidades_estudiantes(
     FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
     FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
 );
+
