@@ -58,6 +58,7 @@ CREATE TABLE terceros(
 ); CREATE TABLE empresas(
     idempresa INT,
     tipo VARCHAR(255),
+    bolsaemp TINYINT(1),
     PRIMARY KEY(idempresa),
     FOREIGN KEY (idempresa) REFERENCES terceros(idtercero),
     actividad VARCHAR(255)
@@ -182,4 +183,3 @@ CREATE TABLE habilidades_estudiantes(
     FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
     FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
 );
-
