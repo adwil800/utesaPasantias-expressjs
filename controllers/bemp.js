@@ -1,7 +1,254 @@
-const { getQueryDB, queryDB } = require("../config/db");
+const { getQueryDB, queryDB, execProcedure } = require("../config/db");
+
+
+exports.addCompanyVacant = async (req, res) => {
+
+    const {requestData} = req.body;
+
+        try {
+            await queryDB(`insert into vacantes_empresas (idempresa, idcarrera, idrecinto, nombre) values ('${requestData.companyId}', '${requestData.careerId}', '${requestData.campusId}', '${requestData.name}'); `)
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+
+exports.updateCompanyVacant = async (req, res) => {
+
+    const {requestData} = req.body;
+
+    //ASk wether a vacante can be in multiple recintos
+        try {
+            
+            await queryDB(` update vacantes_empresas set nombre = '${requestData.name}' where idvacante = '${requestData.vacantId}'; `)
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+exports.getCompanyVacants = async (req, res) => {
+
+    const {companyId} = req.query;
+
+        const vacants = await queryDB(`select idvacante, nombre from vacantes_empresas where idempresa = '${companyId}';`)
+
+        if(vacants.length > 0){
+            return res.status(200).json({
+                success: true,
+                data: vacants
+            })
+        }
+        
+        res.status(200).json({
+    
+            success: false,
+            data: {}
+    
+        });
+        
+};
 
 
 
+exports.addVacantSkill = async (req, res) => {
+
+    const {requestData} = req.body;
+
+        try {
+            await queryDB(`insert into habilidades_vacantes (idhabilidad, idvacante) values ('${requestData.skillId}', '${requestData.vacantId}'); `)
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+exports.removeVacantSkill = async (req, res) => {
+
+    const {requestData} = req.query;
+
+        try {
+            await queryDB(`delete from habilidades_vacantes where idhabilidad = '${requestData.skillId}' && idvacante = '${requestData.vacantId}'); `)
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(200).json({
+        success: true,
+        data: {}
+    });
+
+};
+
+exports.getVacantSkills = async (req, res) => {
+
+    const {vacantId} = req.query;
+
+        const skills = await queryDB(`select h.idhabilidad as skillId, h.nombre as name  from vacantes_empresas as ve 
+                                        join habilidades_vacantes as hv on ve.idvacante = hv.idvacante 
+                                        join habilidades as h on h.idhabilidad = hv.idhabilidad where ve.idvacante = '${vacantId}'`)
+
+        if(skills.length > 0){
+            return res.status(200).json({
+                success: true,
+                data: skills
+            })
+        }
+        
+        res.status(200).json({
+    
+            success: false,
+            data: {}
+    
+        });
+        
+};
+
+
+
+
+
+
+//Bemp company 
+exports.addBempCompany = async (req, res) => {//DONE
+
+    const {requestData} = req.body;
+        if(requestData.type.trim() === "Otras"){
+            requestData.type = requestData.otherType;
+        }
+
+        try {
+            await execProcedure(`insertCompanyBemp('${requestData.name}', '${requestData.type}', '${requestData.about}', '${requestData.phone}', '${requestData.address}',
+                                                    '${requestData.tutorName}');`);
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+
+    res.status(201).json({
+        success: true,
+        data: {}
+    });
+
+};
+    
+exports.updateBempCompany = async (req, res) => {//DONE
+
+        const {requestData, companyId} = req.body;
+    
+        if(requestData.type.trim() === "Otras"){
+            requestData.type = requestData.otherType;
+        }
+    
+        // UPDATE REQUEST SOlicitud  
+
+        try {
+            await execProcedure(`updateCompanyBemp('${requestData.name}', '${requestData.type}', '${requestData.about}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', '${companyId}');`);
+        } catch (errorCode) {
+            return res.status(200).json({
+                success: false,
+                data: {
+                        error: errorMessage(errorCode.errno),
+                        message: errorCode
+                    }
+            });
+            
+        }
+        
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    
+};
+ 
+exports.getBempCompanyData = async (req, res) => { //DONE
+
+    //Temporary, pass studentId on params
+
+    const reqData = await getQueryDB(`select e.idempresa as id, t.nombre as name, e.tipo as type, e.actividad as about, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from terceros as t join empresas as e on e.idempresa = t.idtercero
+                                        join telefonos_terceros as tt on tt.idtercero = e.idempresa
+                                        join telefonos as tel on tel.idtelefono = tt.idtelefono
+                                        join direcciones_terceros as dt on dt.idtercero = e.idempresa
+                                        join direcciones as d on d.iddireccion = dt.iddireccion
+                                        join representantes_empresas as re on re.idempresa = e.idempresa where e.bolsaemp = 1;`);
+    
+    if(reqData.length > 0){
+        reqData["otherType"] = reqData.type;
+
+        reqData.forEach(e => {
+            e["otherType"] = e.type;
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: reqData
+        })
+    }
+    
+    res.status(200).json({
+
+        success: false,
+        data: {}
+
+    });
+    
+
+
+}
+
+ 
+//Student skills
 exports.addStudentSkill = async (req, res) => { //DONE
 
 
@@ -87,27 +334,6 @@ exports.getStudentSkill = async (req, res) => { //DONE
     })
 
 };
-
-exports.getSkillsByCareer = async (req, res) => { //DONE
-
-
-    
-    const {careerId} = req.query;
-    const skills = await getQueryDB(`select idhabilidad as skillId, nombre as name from habilidades where idcarrera = '${careerId}';`);
-    if(skills.length > 0){
-        return res.status(200).json({
-            success: true,
-            data: skills
-        })
-    }
-
-    res.status(200).json({
-        success: false,
-        data: {}
-    })
-
-};
-
 
 function errorMessage(errorCode){
 

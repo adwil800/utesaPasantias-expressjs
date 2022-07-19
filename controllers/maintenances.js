@@ -49,15 +49,15 @@ exports.removeCareerSkill = async (req, res) => {
 
 };
 
-exports.getCareerSkills = async (req, res) => { //DONE
+exports.getSkillsByCareer = async (req, res) => { //DONE
 
     const { careerId } = req.query;
-    const careers = await getQueryDB(`select idhabilidad as skillId, nombre as skillName from habilidades where idcarrera = '${careerId}'`);
+    const skills = await getQueryDB(`select idhabilidad as skillId, nombre as skillName from habilidades where idcarrera = '${careerId}'`);
 
-    if(careers.length > 0){
+    if(skills.length > 0){
         return res.status(200).json({
             success: true,
-            data: careers
+            data: skills
         })
     }
 

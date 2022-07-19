@@ -151,7 +151,7 @@ exports.getCampus = async (req, res) => {
 
     res.status(200).json({
         success: false,
-        data: {}
+        data: []
     })
 
 }

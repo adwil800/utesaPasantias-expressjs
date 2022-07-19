@@ -15,8 +15,6 @@
     END &&  
     DELIMITER ;  
 
-
-    
     DELIMITER &&  
     CREATE PROCEDURE insertUser (IN idusuariou INT, IN usuariou varchar(255), IN contrau varchar(255), IN tipou varchar(255))  
     BEGIN  
@@ -25,7 +23,6 @@
 
     END &&  
     DELIMITER ;  
-
     
     DELIMITER &&  
     CREATE PROCEDURE insertEmployee (IN nombree varchar(255), IN apellidoe varchar(255), IN matriculae varchar(50), IN idrecintoe int, IN cedulae varchar(255), IN dir1 varchar(255), IN ciudade varchar(255), IN provinciae varchar(255), IN paise varchar(255), OUT idtere int)  
@@ -46,7 +43,6 @@
 
     END &&  
     DELIMITER ;  
-
     
     DELIMITER &&  
     CREATE PROCEDURE insertCareer (IN nombrec varchar(255), IN tipoc varchar(255))  
@@ -59,11 +55,6 @@
 
     END &&  
     DELIMITER ;  
-
-
-    
-
-
 
     DELIMITER &&  
         CREATE PROCEDURE insertStudent (IN nombres varchar(255), IN apellidos varchar(255), IN matriculas varchar(50), IN carreras int, IN idrecintos int, IN cedulas varchar(255), IN dir1 varchar(255), IN ciudads varchar(255), IN provincias varchar(255), IN paiss varchar(255), OUT idters int)  
@@ -101,6 +92,10 @@
 
         END &&  
     DELIMITER ;  
+
+
+
+
 
 
 
@@ -175,6 +170,9 @@ DELIMITER ;
 
 
 
+
+
+
 DELIMITER &&  
 CREATE PROCEDURE insertBempRequestData (IN idestudianter int, numrecibor varchar(255), firmar TINYINT, estador varchar(255))  
 BEGIN  
@@ -188,5 +186,73 @@ DELIMITER &&
 CREATE PROCEDURE updateBempRequestData (IN idsolicitudr int, numrecibor varchar(255), estador varchar(255))  
 BEGIN  
     UPDATE `solicitudes` SET `numrecibo` = numrecibor, `estado` = estador WHERE idsolicitud = idsolicitudr;
+END &&  
+DELIMITER ;  
+
+
+
+
+
+
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE insertCompanyBemp (IN nombrer varchar(255), IN tipor varchar(255), IN actividadr varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255))  
+BEGIN  
+
+    insert into terceros (`nombre`) values (nombrer); 
+    SET @terId = LAST_INSERT_ID();
+
+    insert into empresas (`idempresa`, `tipo`, `actividad`, `bolsaemp`) values (@terId, tipor, actividadr, true);
+
+
+    insert into terceros (`nombre`) values (encargador); 
+    SET @terIdRep = LAST_INSERT_ID();
+    insert into personas (`idpersona`) values (@terIdRep); 
+
+
+    insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+
+    insert into telefonos (`telefono`) values (telefonor);
+    SET @telId = LAST_INSERT_ID();
+
+    insert into telefonos_terceros(`idtelefono`, `idtercero`) values (@telId, @terId);
+
+
+    insert into direcciones(`linea1`) values (direccionr);
+    SET @dirId = LAST_INSERT_ID();
+    insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
+
+
+
+
+END &&  
+DELIMITER ;  
+
+
+
+DELIMITER &&  
+CREATE PROCEDURE updateCompanyBemp (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255), IN actividadEmpresa varchar(255),
+                IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
+                IN idempresar INT)  
+BEGIN  
+
+
+    UPDATE `terceros` SET `nombre` = nombreEmpresa WHERE idtercero = idempresar;
+    UPDATE `empresas` SET `tipo` = tipoEmpresa, `actividad` = actividadEmpresa WHERE idempresa = idempresar;
+
+    set @idrep = (select idrepresentante from representantes_empresas where idempresa = idempresar);
+    UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
+
+    set @idtel = (select idtelefono from telefonos_terceros where idtercero = idempresar);
+    UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;
+
+
+    
+    set @iddir = (select iddireccion from direcciones_terceros where idtercero = idempresar);
+    UPDATE `direcciones` SET `linea1` = direccionEmpresa WHERE iddireccion = @iddir;
+
+
 END &&  
 DELIMITER ;  

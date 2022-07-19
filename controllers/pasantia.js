@@ -1,17 +1,5 @@
 const { getQueryDB, queryDB, execProcedure} = require("../config/db");
 
-
-
-
-
-
-
-
-
-
-
-
-
 //Request bemp
 exports.requestBempPasantia = async (req, res) => {
 
@@ -36,7 +24,6 @@ exports.requestBempPasantia = async (req, res) => {
         try {
             await execProcedure(`insertBempRequestData('${studentId}', ${receiptNumber}, '1', '${requestStatus}');`);
         } catch (errorCode) {
-                console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -76,7 +63,6 @@ exports.updateRequestBempPasantia = async (req, res) => {
         try {
             await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}');`);
         } catch (errorCode) {
-                console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -159,7 +145,6 @@ exports.requestNoBempPasantia = async (req, res) => {
     const {requestData, studentId} = req.body;
     let requestStatus = "onHold";
 
-    console.log("OAKD: ", requestData, studentId) 
     if(requestData.receiptNumber.trim().length === 0){
         //Set null : pending for user input, request is on hold
         requestData.receiptNumber = null;
@@ -178,7 +163,6 @@ exports.requestNoBempPasantia = async (req, res) => {
                                                     '${requestData.tutorName}', '${studentId}', ${requestData.receiptNumber}, 
                                                     '1', '${requestStatus}');`);
         } catch (errorCode) {
-                console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -205,7 +189,6 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
     
         const {requestData} = req.body;
         let requestStatus = "onHold";
-        console.log("OAKD: ", requestData) 
     
         if(requestData.receiptNumber.trim().length === 0){
             //Set null : pending for user input, request is on hold
@@ -227,7 +210,6 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
         try {
             await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}');`);
         } catch (errorCode) {
-                console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -245,11 +227,6 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
     
 };
     
-
-
-
-
-
 exports.getStudentNoBempRequest = async (req, res) => { //DONE
 
     //Temporary, pass studentId on params
