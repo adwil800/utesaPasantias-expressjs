@@ -55,13 +55,13 @@ exports.updateRequestBempPasantia = async (req, res) => {
         //Set null : pending for user input, request is on hold
         receiptNumber = null;
         requestStatus = "onHold";
-
+ 
     }else{
         requestStatus = "pending";
     }
 
         try {
-            await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}');`);
+            await execProcedure(`updateBempRequestData('${requestId}', '${receiptNumber}', '${requestStatus}');`);
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -306,11 +306,12 @@ exports.getStudentInformation = async (req, res) => { //DONE
 
     const {studentId} = req.query;
 
-    const general = await getQueryDB(` select e.idestudiante, t.nombre, p.apellido, e.matricula, ae.bolsaempleos, ae.tipopasantia, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
+    const general = await getQueryDB(` select e.idestudiante, t.nombre, p.apellido, ap.correo, e.matricula, ae.bolsaempleos, ae.tipopasantia, d.linea1 as direccion, d.ciudad, d.provincia  from terceros as t 
     join estudiantes as e on t.idtercero = e.idestudiante
     join direcciones_terceros as dt on t.idtercero = dt.idtercero
     join personas as p on e.idestudiante = p.idpersona
     join adicionales_estudiantes as ae on ae.idestudiante = e.idestudiante
+    join adicionales_personas as ap on ap.idpersona = e.idestudiante
     join direcciones as d on dt.iddireccion = d.iddireccion where t.idtercero = '${studentId}';`);
 
 

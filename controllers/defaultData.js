@@ -13,8 +13,9 @@ exports.pushStudents = async (req, res, next) => { //DONE
             lastName: "Castillo García",
             matricula: "1161609",
             career: "1",
-            recinto: "2",
-
+            recinto: "5",
+            
+            email: "adwil800@gmail.com",
             cedula: "40213907534",
             phones: [{number: "8096195358", type: "Movil"}, {number: "8096121758", type: "Casa"}],
             address: {
@@ -28,9 +29,10 @@ exports.pushStudents = async (req, res, next) => { //DONE
             name: "John Mike",
             lastName: "Sins",
             matricula: "1161611",
-            career: "1",
-            recinto: "2",
+            career: "2",
+            recinto: "4",
 
+            email: "locky2398@gmail.com",
             cedula: "40213907534",
             phones: [{number: "8096195358", type: "Movil"}, {number: "8096121758", type: "Casa"}],
             address: {
@@ -49,7 +51,7 @@ exports.pushStudents = async (req, res, next) => { //DONE
         try {
                 const studentId = await execProcedure(`insertStudent('${student.name}', '${student.lastName}', '${student.matricula}', '${student.career}', '${student.recinto}', 
                                                                      '${student.cedula}', '${student.address.fullAddress}', '${student.address.city}', 
-                                                                     '${student.address.province}', '${student.address.country}', @studentId); select @studentId;`);
+                                                                     '${student.address.province}', '${student.address.country}', '${student.email}', @studentId); select @studentId;`);
 
                 for (const phone of student.phones) {
 
@@ -58,6 +60,7 @@ exports.pushStudents = async (req, res, next) => { //DONE
                 }
                
            } catch (errorCode) {
+            console.log(errorCode)
             continue;
             /** 
             return res.status(200).json({
@@ -73,7 +76,7 @@ exports.pushStudents = async (req, res, next) => { //DONE
 
     res.status(201).json({
         success: true,
-        data: {}
+        data: {message: "Students registered."}
     });
 }; 
 
@@ -83,6 +86,14 @@ exports.pushCareers = async (req, res, next) => { //DONE
         {
             name: "Ingeniería en Sistemas Computacionales",
             type: "Arquitectura e Ingeniería",
+        },
+        {
+            name: "Medicina",
+            type: "Ciencias de la salud",
+        },
+        {
+            name: "Veterinaria",
+            type: "Ciencias de la salud",
         },
 
     ]
@@ -118,8 +129,8 @@ exports.pushEmployees = async (req, res, next) => { //DONE
             name: "Maria Altagracia",
             lastName: "Jimenez Tavarez",
             matricula: "1123342",
-            recinto: "2",
-
+            recinto: "4",
+            email: "marialta@gmail.com",
             cedula: "4023594962",
             phones: [{number: "8496578896", type: "Casa"}],
             address: {
@@ -133,8 +144,8 @@ exports.pushEmployees = async (req, res, next) => { //DONE
             name: "Jose Marcos",
             lastName: "García Lora",
             matricula: "1123343",
-            recinto: "2",
-
+            recinto: "5",
+            email: "",
             cedula: "4029845554",
             phones: [{number: "8295567985", type: "Movil"}],
             address: {
@@ -151,7 +162,7 @@ exports.pushEmployees = async (req, res, next) => { //DONE
         try {
                 const employeeId = await execProcedure(`insertEmployee('${employee.name}', '${employee.lastName}', '${employee.matricula}', '${employee.recinto}', 
                                                                      '${employee.cedula}', '${employee.address.fullAddress}', '${employee.address.city}', 
-                                                                     '${employee.address.province}', '${employee.address.country}', @employeeId); select @employeeId;`);
+                                                                     '${employee.address.province}', '${employee.address.country}', '${employee.email}', @employeeId); select @employeeId;`);
 
                 for (const phone of employee.phones) {
 
@@ -176,7 +187,7 @@ exports.pushEmployees = async (req, res, next) => { //DONE
 
     res.status(201).json({
         success: true,
-        data: {}
+        data: {message: "Employees registered."}
     });
 
 };
@@ -235,7 +246,7 @@ exports.pushUsers = async (req, res, next) => { //DONE
 
     res.status(200).json({
         success: true,
-        data: {}
+        data: {message: "Users registered."}
     });
 
  
@@ -246,6 +257,24 @@ exports.pushCampus = async (req, res, next) => { //DONE
     const defaultCampus = [
         {
             name: "Santiago",
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            }
+        },
+        {
+            name: "Santo Domingo",
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            }
+        },
+        {
+            name: "Mao",
             address: {
                 fullAddress: "Av estrella sadhalá",
                 city: "Santiago",
@@ -276,7 +305,7 @@ exports.pushCampus = async (req, res, next) => { //DONE
 
     res.status(201).json({
         success: true,
-        data: {}
+        data: {message: "Campus registered."}
     });
 
 };
@@ -295,6 +324,14 @@ exports.pushSkills = async (req, res, next) => { //DONE
         {
             skillName: "Html & css",
             career: "1"
+        },
+        {
+            skillName: "Cuidado",
+            career: "2"
+        },
+        {
+            skillName: "Operacion abdominal nivel 1",
+            career: "2"
         },
     ]
 
@@ -315,7 +352,7 @@ exports.pushSkills = async (req, res, next) => { //DONE
 
     res.status(201).json({
         success: true,
-        data: {}
+        data: {message: "Skills registered."}
     });
 
 };

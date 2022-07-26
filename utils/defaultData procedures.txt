@@ -25,7 +25,7 @@
     DELIMITER ;  
     
     DELIMITER &&  
-    CREATE PROCEDURE insertEmployee (IN nombree varchar(255), IN apellidoe varchar(255), IN matriculae varchar(50), IN idrecintoe int, IN cedulae varchar(255), IN dir1 varchar(255), IN ciudade varchar(255), IN provinciae varchar(255), IN paise varchar(255), OUT idtere int)  
+    CREATE PROCEDURE insertEmployee (IN nombree varchar(255), IN apellidoe varchar(255), IN matriculae varchar(50), IN idrecintoe int, IN cedulae varchar(255), IN dir1 varchar(255), IN ciudade varchar(255), IN provinciae varchar(255), IN paise varchar(255), IN correoe varchar(255), OUT idtere int)  
     BEGIN  
     
         insert into terceros (`nombre`) values (nombree); 
@@ -33,7 +33,7 @@
         SET idtere = @terId;
 
         insert into personas (`idpersona`, `apellido`) values (@terId, apellidoe);
-        insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedulae);
+        insert into adicionales_personas (`idpersona`, `cedula`, `correo`) values (@terId, cedulae, correoe);
         
         insert into empleados (`idempleado`, `idrecinto`, `matricula`) values (@terId, idrecintoe, matriculae);
 
@@ -57,7 +57,7 @@
     DELIMITER ;  
 
     DELIMITER &&  
-        CREATE PROCEDURE insertStudent (IN nombres varchar(255), IN apellidos varchar(255), IN matriculas varchar(50), IN carreras int, IN idrecintos int, IN cedulas varchar(255), IN dir1 varchar(255), IN ciudads varchar(255), IN provincias varchar(255), IN paiss varchar(255), OUT idters int)  
+        CREATE PROCEDURE insertStudent (IN nombres varchar(255), IN apellidos varchar(255), IN matriculas varchar(50), IN carreras int, IN idrecintos int, IN cedulas varchar(255), IN dir1 varchar(255), IN ciudads varchar(255), IN provincias varchar(255), IN paiss varchar(255), IN correos varchar(255), OUT idters int)  
         BEGIN  
         
             insert into terceros (`nombre`) values (nombres); 
@@ -65,7 +65,7 @@
             SET idters = @terId;
 
             insert into personas (`idpersona`, `apellido`) values (@terId, apellidos);
-            insert into adicionales_personas (`idpersona`, `cedula`) values (@terId, cedulas);
+            insert into adicionales_personas (`idpersona`, `cedula`, `correo`) values (@terId, cedulas, correos);
             
             insert into estudiantes (`idestudiante`, `idcarrera`, `idrecinto`, `matricula`) values (@terId, carreras, idrecintos, matriculas);
 

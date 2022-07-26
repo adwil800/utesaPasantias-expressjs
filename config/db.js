@@ -13,7 +13,7 @@ const testDBConnection = (req, res, next) => {
 
         if(err)
             if(err.fatal){
-                res.status(200).json({success: false, data: "No se pudo establecer conexión con la base de datos"})
+                res.status(200).json({success: false, nodb: true, data: "No se pudo establecer conexión con la base de datos"})
                 return;    
             }
             

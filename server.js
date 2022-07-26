@@ -8,7 +8,7 @@ app.use(cors({
     origin: "http://localhost:8080",
     credentials: true,
 }));
-
+app.use(express.static(__dirname + '/public'));
 //Import routes
 const defaultData = require("./routes/defaultData");
 

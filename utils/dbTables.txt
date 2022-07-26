@@ -1,4 +1,4 @@
- -	Script
+
 CREATE TABLE terceros(
     idtercero INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(255)
@@ -10,7 +10,9 @@ CREATE TABLE terceros(
 ); CREATE TABLE adicionales_personas(
     idpersona INT,
     FOREIGN KEY(idpersona) REFERENCES personas(idpersona),
-    cedula VARCHAR(255)
+    cedula VARCHAR(255),
+    correo varchar(255)
+
 ); CREATE TABLE telefonos(
     idtelefono INT PRIMARY KEY AUTO_INCREMENT,
     telefono VARCHAR(255)
@@ -51,7 +53,7 @@ CREATE TABLE terceros(
     FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto),
     FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
 ); CREATE TABLE adicionales_estudiantes(
-     idestudiante INT,
+    idestudiante INT,
     FOREIGN KEY(idestudiante) REFERENCES estudiantes (idestudiante),
     bolsaempleos TINYINT(1),
     tipopasantia TINYINT(1)
