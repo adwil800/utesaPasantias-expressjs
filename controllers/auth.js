@@ -27,33 +27,44 @@ exports.login = async (req, res) => {
 
         userData = userData[0];
     //idusuario, usuario, contra, tipo
-    
-        if(userData.tipo === "user"){
-            let campus = await getQueryDB(`select e.idrecinto from estudiantes as e where e.idestudiante = '${userData.idusuario}';`)
-            if(campus.length > 0){
-                userData["idrecinto"] = campus[0].idrecinto;
-            }else{
+        //Get user email
+        try {
+            let email = await getQueryDB(`select correo from adicionales_personas where idpersona = '${userData.idusuario}';`)
+            userData["email"] = email[0].correo || "";
+        } catch (error) {
+            return res.status(200).json({
+                success: false,
+                data: "Error del servidor",
+            });
+        }
 
+        if(userData.tipo === "user"){
+            
+            try {
+                let campus = await getQueryDB(`select e.idrecinto from estudiantes as e where e.idestudiante = '${userData.idusuario}';`)
+                userData["idrecinto"] = campus[0].idrecinto || "";
+               
+            } catch (error) {
                 return res.status(200).json({
                     success: false,
                     data: "Error del servidor",
                 });
-                
             }
         }
         
         else if(userData.tipo === "admin"){
-            let campus = await getQueryDB(`select e.idrecinto from empleados as e where e.idempleado = '${userData.idusuario}';`)
-            if(campus.length > 0){
+            try {
+                let campus = await getQueryDB(`select e.idrecinto from empleados as e where e.idempleado = '${userData.idusuario}';`)
                 userData["idrecinto"] = campus[0].idrecinto;
-            }else{
-
-                return res.status(200).json({
+                
+            } catch (error) {
+                   return res.status(200).json({
                     success: false,
                     data: "Error del servidor",
                 });
                 
             }
+         
         }
 
 
@@ -104,7 +115,6 @@ exports.logout = (req, res) => {
 }
 
 exports.getMe = (req, res) => {
-
 
     if(req.session.userData){
          res.status(200).json({

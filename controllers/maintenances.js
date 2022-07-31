@@ -7,7 +7,7 @@ exports.addCareerSkill = async (req, res) => {
     const { careerId, skillName} = req.body;
 
     try {
-        await queryDB(`insert into habilidades (idcarrera, nombre) values ('${careerId}', '${skillName}');`);
+        await queryDB(`insert into aptitudes (idcarrera, nombre) values ('${careerId}', '${skillName}');`);
     } catch (errorCode) {
         return res.status(200).json({
             success: false,
@@ -30,7 +30,7 @@ exports.removeCareerSkill = async (req, res) => {
     const { careerId, skillId } = req.query;
     
     try {
-        await queryDB(`delete from habilidades where idhabilidad = '${skillId}' && idcarrera = '${careerId}';`);
+        await queryDB(`delete from aptitudes where idhabilidad = '${skillId}' && idcarrera = '${careerId}';`);
     } catch (errorCode) {
         return res.status(200).json({
             success: false,
@@ -52,19 +52,23 @@ exports.removeCareerSkill = async (req, res) => {
 exports.getSkillsByCareer = async (req, res) => { //DONE
 
     const { careerId } = req.query;
-    const skills = await getQueryDB(`select idhabilidad as skillId, nombre as skillName from habilidades where idcarrera = '${careerId}'`);
 
-    if(skills.length > 0){
+    
+    try {
+        const skills = await getQueryDB(`select idhabilidad as skillId, nombre as skillName from aptitudes where idcarrera = '${careerId}'`);
+
         return res.status(200).json({
             success: true,
-            data: skills
+            data: skills 
         })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
     }
 
-    res.status(200).json({
-        success: false,
-        data: []
-    })
 
 };
 
@@ -76,20 +80,20 @@ exports.getSkillsByCareer = async (req, res) => { //DONE
 
 exports.getAllCareers = async (req, res) => { //DONE
 
+    try {
+        const careers = await getQueryDB(`select c.idcarrera, t.nombre from carreras as c join terceros as t on idcarrera = idtercero;`);
 
-    const careers = await getQueryDB(`select c.idcarrera, t.nombre from carreras as c join terceros as t on idcarrera = idtercero;`);
-
-    if(careers.length > 0){
         return res.status(200).json({
             success: true,
-            data: careers
+            data: careers 
         })
-    }
 
-    res.status(200).json({
-        success: false,
-        data: []
-    })
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
+    }
 
 };
 
@@ -97,19 +101,20 @@ exports.getStudentCareer = async (req, res) => { //DONE
 
     const {studentId} = req.query;
 
-    const careerId = await getQueryDB(`select idcarrera from estudiantes where idestudiante = '${studentId}'`);
+    try {
+        const careerId = await getQueryDB(`select idcarrera from estudiantes where idestudiante = '${studentId}'`);
 
-    if(careerId.length > 0){
         return res.status(200).json({
             success: true,
             data: careerId[0]
         })
-    }
 
-    res.status(200).json({
-        success: false,
-        data: ""
-    })
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
+    }
 
 };
 

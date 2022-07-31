@@ -97,7 +97,6 @@ CREATE TABLE solicitudes(
     FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
     numrecibo varchar(255),
     firma TINYINT,
-    bemp TINYINT,
     estado VARCHAR(255)
 ); CREATE TABLE revisiones_solicitudes(
     idrevisionsolicitud INT PRIMARY KEY AUTO_INCREMENT,
@@ -163,25 +162,33 @@ CREATE TABLE vacantes_empresas(
     idcarrera INT,
     idrecinto INT,
     nombre VARCHAR(255),
+    descripcion varchar(255),
     FOREIGN KEY (idempresa) REFERENCES empresas(idempresa),
     FOREIGN KEY(idrecinto) REFERENCES recintos (idrecinto),
     FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
 );
-CREATE TABLE habilidades(
+CREATE TABLE aptitudes(
     idhabilidad INT PRIMARY KEY AUTO_INCREMENT,
     idcarrera INT,
     nombre VARCHAR(255),
     FOREIGN KEY(idcarrera) REFERENCES carreras(idcarrera)
 );
-CREATE TABLE habilidades_vacantes(
+CREATE TABLE aptitudes_vacantes(
     idhabilidad INT,
     idvacante INT,
-    FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
+    FOREIGN KEY (idhabilidad) REFERENCES aptitudes(idhabilidad),
     FOREIGN KEY (idvacante) REFERENCES vacantes_empresas(idvacante)
 );
-CREATE TABLE habilidades_estudiantes(
+CREATE TABLE aptitudes_estudiantes(
     idhabilidad INT,
     idestudiante INT,
-    FOREIGN KEY (idhabilidad) REFERENCES habilidades(idhabilidad),
+    FOREIGN KEY (idhabilidad) REFERENCES aptitudes(idhabilidad),
+    FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
+);
+
+CREATE TABLE estudiantes_vacantes(
+    idestudiante INT UNIQUE,
+    idvacante INT,
+    FOREIGN KEY (idvacante) REFERENCES vacantes_empresas(idvacante),
     FOREIGN KEY (idestudiante) REFERENCES estudiantes(idestudiante)
 );

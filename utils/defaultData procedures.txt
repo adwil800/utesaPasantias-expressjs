@@ -137,33 +137,67 @@ DELIMITER ;
 
 
 
+
 DELIMITER &&  
+
 CREATE PROCEDURE updateRequestData (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255),
                 IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
                 IN numrecibor varchar(255), IN estador varchar(255),
                 IN idsolicitudr int)  
 BEGIN  
+	set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitudr);
+    IF @idempresa IS NULL THEN BEGIN
+    insert into terceros (`nombre`) values (nombreEmpresa); 
+        SET @terId = LAST_INSERT_ID();
 
-    set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitudr);
-
-    UPDATE `terceros` SET `nombre` = nombreEmpresa WHERE idtercero = @idempresa;
-    UPDATE `empresas` SET `tipo` = tipoEmpresa WHERE idempresa = @idempresa;
-
-    set @idrep = (select idrepresentante from representantes_empresas where idempresa = @idempresa);
-    UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
-
-    set @idtel = (select idtelefono from telefonos_terceros where idtercero = @idempresa);
-    UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;
+        insert into empresas (`idempresa`, `tipo`) values (@terId, tipoEmpresa);
 
 
-    
-    set @iddir = (select iddireccion from direcciones_terceros where idtercero = @idempresa);
-    UPDATE `direcciones` SET `linea1` = direccionEmpresa WHERE iddireccion = @iddir;
+        insert into terceros (`nombre`) values (encargadoEmpresa); 
+        SET @terIdRep = LAST_INSERT_ID();
+        insert into personas (`idpersona`) values (@terIdRep); 
+
+
+        insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+
+        insert into telefonos (`telefono`) values (telefonoEmpresa);
+        SET @telId = LAST_INSERT_ID();
+
+        insert into telefonos_terceros(`idtelefono`, `idtercero`) values (@telId, @terId);
+
+
+        insert into direcciones(`linea1`) values (direccionEmpresa);
+        SET @dirId = LAST_INSERT_ID();
+        insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
+
+        UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador, `idempresa` = @terId WHERE idsolicitud = idsolicitudr;
+
+    END;
+    ELSE
+    	BEGIN
+        	
+            UPDATE `terceros` SET `nombre` = nombreEmpresa WHERE idtercero = @idempresa;
+            UPDATE `empresas` SET `tipo` = tipoEmpresa WHERE idempresa = @idempresa;
+
+            set @idrep = (select idrepresentante from representantes_empresas where idempresa = @idempresa);
+            UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
+
+            set @idtel = (select idtelefono from telefonos_terceros where idtercero = @idempresa);
+            UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;
+
+
+
+            set @iddir = (select iddireccion from direcciones_terceros where idtercero = @idempresa);
+            UPDATE `direcciones` SET `linea1` = direccionEmpresa WHERE iddireccion = @iddir;
+
+        END;
+      END IF; 
+
 
     
     UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador WHERE idsolicitud = idsolicitudr;
 
-END &&  
+END && 
 DELIMITER ;  
 
 
@@ -256,3 +290,10 @@ BEGIN
 
 END &&  
 DELIMITER ;  
+
+
+
+
+
+
+

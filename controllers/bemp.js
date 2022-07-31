@@ -3,10 +3,9 @@ const { getQueryDB, queryDB, execProcedure } = require("../config/db");
 
 exports.addCompanyVacant = async (req, res) => {
 
-    const {requestData} = req.body;
-
+    const {companyId, campusId, vName, careerId, vacantDesc} = req.body;
         try {
-            await queryDB(`insert into vacantes_empresas (idempresa, idcarrera, idrecinto, nombre) values ('${requestData.companyId}', '${requestData.careerId}', '${requestData.campusId}', '${requestData.name}'); `)
+            await queryDB(`insert into vacantes_empresas (idempresa, idcarrera, idrecinto, nombre, descripcion) values ('${companyId}', '${careerId}', '${campusId}', '${vName}', '${vacantDesc}'); `)
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -28,12 +27,11 @@ exports.addCompanyVacant = async (req, res) => {
 
 exports.updateCompanyVacant = async (req, res) => {
 
-    const {requestData} = req.body;
-
+    const {vacantId, campusId, vName, careerId, vacantDesc} = req.body;
     //ASk wether a vacante can be in multiple recintos
         try {
             
-            await queryDB(` update vacantes_empresas set nombre = '${requestData.name}' where idvacante = '${requestData.vacantId}'; `)
+            await queryDB(` update vacantes_empresas set nombre = '${vName}', descripcion = '${vacantDesc}', idcarrera = '${careerId}', idrecinto = '${campusId}' where idvacante = '${vacantId}'; `)
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -56,21 +54,26 @@ exports.getCompanyVacants = async (req, res) => {
 
     const {companyId} = req.query;
 
-        const vacants = await queryDB(`select idvacante, nombre from vacantes_empresas where idempresa = '${companyId}';`)
 
-        if(vacants.length > 0){
-            return res.status(200).json({
-                success: true,
-                data: vacants
-            })
-        }
-        
-        res.status(200).json({
     
+    try {
+     
+        const vacants = await getQueryDB(`select ve.idvacante as id, ve.idcarrera as careerId, ve.idrecinto as campusId, ve.nombre as vName, t.nombre as career, ter.nombre as campus, 
+                                        ve.descripcion as vacantDesc from vacantes_empresas as ve
+                                        join terceros as t on t.idtercero = ve.idcarrera
+                                        join terceros ter on ter.idtercero = ve.idrecinto where ve.idempresa = '${companyId}';`)
+
+        return res.status(200).json({
+            success: true,
+            data: vacants 
+        })
+
+    } catch (error) {
+        res.status(200).json({
             success: false,
             data: {}
-    
         });
+    }
         
 };
 
@@ -78,10 +81,10 @@ exports.getCompanyVacants = async (req, res) => {
 
 exports.addVacantSkill = async (req, res) => {
 
-    const {requestData} = req.body;
+    const {vacantId, skillId} = req.body;
 
         try {
-            await queryDB(`insert into habilidades_vacantes (idhabilidad, idvacante) values ('${requestData.skillId}', '${requestData.vacantId}'); `)
+            await queryDB(`insert into aptitudes_vacantes (idhabilidad, idvacante) values ('${skillId}', '${vacantId}'); `)
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -102,10 +105,10 @@ exports.addVacantSkill = async (req, res) => {
 
 exports.removeVacantSkill = async (req, res) => {
 
-    const {requestData} = req.query;
+    const {skillId, vacantId} = req.query;
 
         try {
-            await queryDB(`delete from habilidades_vacantes where idhabilidad = '${requestData.skillId}' && idvacante = '${requestData.vacantId}'); `)
+            await queryDB(`delete from aptitudes_vacantes where idhabilidad = '${skillId}' && idvacante = '${vacantId}'; `)
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -128,23 +131,25 @@ exports.getVacantSkills = async (req, res) => {
 
     const {vacantId} = req.query;
 
-        const skills = await queryDB(`select h.idhabilidad as skillId, h.nombre as name  from vacantes_empresas as ve 
-                                        join habilidades_vacantes as hv on ve.idvacante = hv.idvacante 
-                                        join habilidades as h on h.idhabilidad = hv.idhabilidad where ve.idvacante = '${vacantId}'`)
-
-        if(skills.length > 0){
-            return res.status(200).json({
-                success: true,
-                data: skills
-            })
-        }
+    try {
         
+        const skills = await getQueryDB(`select h.idhabilidad as skillId, h.nombre as skillName  from vacantes_empresas as ve 
+        join aptitudes_vacantes as hv on ve.idvacante = hv.idvacante 
+        join aptitudes as h on h.idhabilidad = hv.idhabilidad where ve.idvacante = '${vacantId}'`)
+       
+        return res.status(200).json({
+            success: true,
+            data: skills 
+        })
+
+    } catch (error) {
         res.status(200).json({
-    
             success: false,
             data: {}
-    
         });
+    }
+    
+       
         
 };
 
@@ -212,36 +217,39 @@ exports.updateBempCompany = async (req, res) => {//DONE
     
 };
  
-exports.getBempCompanyData = async (req, res) => { //DONE
+exports.getBempCompanies = async (req, res) => { //DONE
+    
+    try {
 
-    //Temporary, pass studentId on params
-
-    const reqData = await getQueryDB(`select e.idempresa as id, t.nombre as name, e.tipo as type, e.actividad as about, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from terceros as t join empresas as e on e.idempresa = t.idtercero
+        const reqData = await getQueryDB(`select e.idempresa as id, t.nombre as name, e.tipo as type, e.actividad as about, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from terceros as t join empresas as e on e.idempresa = t.idtercero
                                         join telefonos_terceros as tt on tt.idtercero = e.idempresa
                                         join telefonos as tel on tel.idtelefono = tt.idtelefono
                                         join direcciones_terceros as dt on dt.idtercero = e.idempresa
                                         join direcciones as d on d.iddireccion = dt.iddireccion
                                         join representantes_empresas as re on re.idempresa = e.idempresa where e.bolsaemp = 1;`);
+        
+        if(reqData.length > 0){
+            reqData["otherType"] = reqData.type;
     
-    if(reqData.length > 0){
-        reqData["otherType"] = reqData.type;
-
-        reqData.forEach(e => {
-            e["otherType"] = e.type;
-        });
+            reqData.forEach(e => {
+                e["otherType"] = e.type;
+            });
+    
+        
+        }
 
         return res.status(200).json({
             success: true,
             data: reqData
         })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
     }
-    
-    res.status(200).json({
-
-        success: false,
-        data: {}
-
-    });
+  
     
 
 
@@ -255,7 +263,7 @@ exports.addStudentSkill = async (req, res) => { //DONE
     const {skillId, studentId} = req.body;
     
     try {
-        await queryDB(`insert into habilidades_estudiantes (idhabilidad, idestudiante) values ('${skillId}', '${studentId}');`);
+        await queryDB(`insert into aptitudes_estudiantes (idhabilidad, idestudiante) values ('${skillId}', '${studentId}');`);
     } catch (errorCode) {
         return res.status(200).json({
             success: false,
@@ -278,7 +286,7 @@ exports.removeStudentSkills = async (req, res) => { //DONE
 
     const {skillId, studentId} = req.query;
     try {
-        await queryDB(`delete from habilidades_estudiantes where idhabilidad = '${skillId}' && idestudiante = '${studentId}';`);
+        await queryDB(`delete from aptitudes_estudiantes where idhabilidad = '${skillId}' && idestudiante = '${studentId}';`);
     } catch (errorCode) {
         return res.status(200).json({
             success: false,
@@ -300,38 +308,100 @@ exports.getStudentSkills = async (req, res) => { //DONE
 
 
     const {studentId} = req.query;
-    const skills = await getQueryDB(`select idhabilidad as skillId from habilidades_estudiantes where idestudiante = '${studentId}'`);
 
-    if(skills.length > 0){
+    try {
+        const skills = await getQueryDB(`select idhabilidad as skillId from aptitudes_estudiantes where idestudiante = '${studentId}'`);
+
         return res.status(200).json({
             success: true,
             data: skills
         })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
     }
-
-    res.status(200).json({
-        success: false,
-        data: []
-    })
-
+  
 };
 
 exports.getStudentSkill = async (req, res) => { //DONE
  
     const {skillId, studentId} = req.query;
-    const skills = await getQueryDB(`select idhabilidad as skillId from habilidades_estudiantes where idestudiante = '${studentId}' and idhabilidad = '${skillId}'`);
 
-    if(skills.length > 0){
+    try {
+        const skills = await getQueryDB(`select idhabilidad as skillId from aptitudes_estudiantes where idestudiante = '${studentId}' and idhabilidad = '${skillId}'`);
+
         return res.status(200).json({
             success: true,
-            data: skills[0]
+            data: skills[0] || []
         })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
     }
 
-    res.status(200).json({
-        success: false,
-        data: {}
-    })
+};
+
+
+
+
+
+
+
+
+
+//v assignation
+exports.getBempStudents = async (req, res) => { //DONE
+
+    try {
+        const students = await getQueryDB(`  select e.idestudiante as studentId, e.matricula, t.nombre as studentName, p.apellido as studentLastName,
+                                             e.idcarrera as careerId, t1.nombre as careerName, e.idrecinto as campusId, t2.nombre as campusName from estudiantes as e 
+                                             join terceros as t on t.idtercero = e.idestudiante
+                                             join terceros as t1 on t1.idtercero = e.idcarrera
+                                             join terceros as t2 on t2.idtercero = e.idrecinto
+                                             join personas as p on p.idpersona = e.idestudiante
+                                             join adicionales_estudiantes as ae on ae.idestudiante = e.idestudiante where ae.bolsaempleos = 1;`);
+
+        return res.status(200).json({
+            success: true,
+            data: students
+        })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
+    }
+
+};
+
+exports.getVacantsByCampusCareer = async (req, res) => { //DONE
+    
+    const { campusId, careerId } = req.query;
+
+    try {
+        const vacants = await getQueryDB(`select ve.idempresa as companyId, t.nombre as companyName, ve.idvacante as vacantId, 
+                                          ve.nombre as vName, ve.descripcion as vacantDesc from vacantes_empresas as ve 
+                                          join terceros as t on t.idtercero = ve.idempresa
+                                          where idrecinto = '${campusId}' AND idcarrera = '${careerId}';`);
+ 
+        return res.status(200).json({
+            success: true,
+            data: vacants
+        })
+
+    } catch (error) {
+        res.status(200).json({
+            success: false,
+            data: {}
+        });
+    }
 
 };
 

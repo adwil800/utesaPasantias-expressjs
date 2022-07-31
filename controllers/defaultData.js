@@ -117,7 +117,7 @@ exports.pushCareers = async (req, res, next) => { //DONE
 
     res.status(201).json({
         success: true,
-        data: {}
+        data: {message: "Careers registered."}
     });
 
 };
@@ -337,7 +337,7 @@ exports.pushSkills = async (req, res, next) => { //DONE
 
     for (const skill of defaultSkills) {
         try {
-                await queryDB(`insert into habilidades (idcarrera, nombre) values ('${skill.career}', '${skill.skillName}')`);
+                await queryDB(`insert into aptitudes (idcarrera, nombre) values ('${skill.career}', '${skill.skillName}')`);
            } catch (errorCode) {
                 return res.status(200).json({
                     success: false,

@@ -10,7 +10,6 @@ exports.requestBempPasantia = async (req, res) => {
 
     let {receiptNumber, studentId} = req.body;
     let requestStatus = "onHold";
-
     if(receiptNumber.trim().length === 0){
         //Set null : pending for user input, request is on hold
         receiptNumber = null;
@@ -22,7 +21,10 @@ exports.requestBempPasantia = async (req, res) => {
 
 
         try {
+            if(receiptNumber === null)
             await execProcedure(`insertBempRequestData('${studentId}', ${receiptNumber}, '1', '${requestStatus}');`);
+            else
+            await execProcedure(`insertBempRequestData('${studentId}', '${receiptNumber}', '1', '${requestStatus}');`);
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -61,6 +63,9 @@ exports.updateRequestBempPasantia = async (req, res) => {
     }
 
         try {
+            if(receiptNumber === null)
+            await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}');`);
+            else
             await execProcedure(`updateBempRequestData('${requestId}', '${receiptNumber}', '${requestStatus}');`);
         } catch (errorCode) {
             return res.status(200).json({
@@ -81,27 +86,24 @@ exports.updateRequestBempPasantia = async (req, res) => {
 
 exports.getStudentBempRequest = async (req, res) => { //DONE
 
-    //Temporary, pass studentId on params
-
     const {studentId} = req.query;
 
-    const reqData = await getQueryDB(`select idsolicitud as reqId from solicitudes where idestudiante = '${studentId}';`);
-    
-    if(reqData.length > 0){
-
+    try {
+        
+        const reqData = await getQueryDB(`select idsolicitud as reqId from solicitudes where idestudiante = '${studentId}';`);
         return res.status(200).json({
             success: true,
             data: reqData[0]
         })
+
+    } catch (error) {
+        res.status(200).json({
+
+            success: false,
+            data: {}
+    
+        });
     }
-    
-    res.status(200).json({
-
-        success: false,
-        data: {}
-
-    });
-    
 
 
 }
@@ -163,6 +165,7 @@ exports.requestNoBempPasantia = async (req, res) => {
                                                     '${requestData.tutorName}', '${studentId}', ${requestData.receiptNumber}, 
                                                     '1', '${requestStatus}');`);
         } catch (errorCode) {
+            console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -204,12 +207,12 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
             requestData.type = requestData.otherType;
         }
     
-    
         // UPDATE REQUEST SOlicitud  
 
         try {
             await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}');`);
         } catch (errorCode) {
+            console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -233,38 +236,65 @@ exports.getStudentNoBempRequest = async (req, res) => { //DONE
 
     const {studentId} = req.query;
 
-    const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.numrecibo as receiptNumber, t.nombre as name, e.tipo as type, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from solicitudes as s 
-                                     join terceros as t on t.idtercero = s.idempresa
-                                     join empresas as e on e.idempresa = s.idempresa
-                                     join telefonos_terceros as tt on tt.idtercero = s.idempresa
-                                     join telefonos as tel on tel.idtelefono = tt.idtelefono
-                                     join direcciones_terceros as dt on dt.idtercero = s.idempresa
-                                     join direcciones as d on d.iddireccion = dt.iddireccion
-                                     join representantes_empresas as re on re.idempresa = s.idempresa
-                                     where idestudiante = '${studentId}';`);
-    
-    if(reqData.length > 0){
-        reqData[0]["otherType"] = reqData[0].type;
-        if(reqData[0].receiptNumber === null){
-            reqData[0].receiptNumber = "";
+    try {
+        //Check if theres a company
+        
+        const isCompany = await getQueryDB(`select idsolicitud as reqId, idempresa as companyId from solicitudes where idestudiante = '${studentId}'`);
+        if(isCompany.length > 0){
+            if(isCompany[0].companyId === null && isCompany[0].reqId){
+                //Get req data
+                const reqData = await getQueryDB(`select idsolicitud as reqId, numrecibo as receiptNumber from solicitudes where idestudiante = '${studentId}'`);
+                reqData[0].noCompany = true;
+                if(!reqData[0].receiptNumber) reqData[0].receiptNumber = ""; 
+                return res.status(200).json({
+                    success: true,
+                    data: reqData[0]
+                })
+
+            }else{
+                
+                //theres a company within
+                const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.numrecibo as receiptNumber, 
+                t.nombre as name, e.tipo as type, tel.telefono as phone, d.linea1 as address, 
+                (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from solicitudes as s 
+                join terceros as t on t.idtercero = s.idempresa
+                join empresas as e on e.idempresa = s.idempresa
+                join telefonos_terceros as tt on tt.idtercero = s.idempresa
+                join telefonos as tel on tel.idtelefono = tt.idtelefono
+                join direcciones_terceros as dt on dt.idtercero = s.idempresa
+                join direcciones as d on d.iddireccion = dt.iddireccion
+                join representantes_empresas as re on re.idempresa = s.idempresa
+                where idestudiante = '${studentId}';`);
+                
+                if(!reqData[0].receiptNumber) reqData[0].receiptNumber = ""; 
+
+                return res.status(200).json({
+                    success: true,
+                    data: reqData[0]
+                })
+            }
         }
         return res.status(200).json({
-            success: true,
-            data: reqData[0]
+            success: false,
+            noReq: true,
+            data: {}
         })
+
+    } catch (error) {
+        res.status(200).json({
+
+            success: false,
+            noReq: true,
+            data: {}
+    
+        });
     }
     
 
 
 
 
-    res.status(200).json({
-
-        success: false,
-        noReq: true,
-        data: {}
-
-    });
+ 
     
 
 

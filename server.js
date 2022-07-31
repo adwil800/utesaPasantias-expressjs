@@ -25,7 +25,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: { 
-        maxAge: 3600000,
+        maxAge: 172800000,
         //secure: true 
     }
 }));
@@ -35,7 +35,6 @@ const {protectRoute} = require("./controllers/auth");
 
 //Middleware
 app.use(testDBConnection); 
-
 
 //Use routes
 app.use("/api/default", defaultData); //Used to insert data that's can't be registered through front
