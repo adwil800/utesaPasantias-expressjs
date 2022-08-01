@@ -42,6 +42,40 @@ exports.pushStudents = async (req, res, next) => { //DONE
                 country: "República Dominicana"
             } 
         },
+        {
+            name: "Elizabeth Maria",
+            lastName: "Liniero Corrales",
+            matricula: "1131821",
+            career: "1",
+            recinto: "4",
+
+            email: "eli@gmail.com",
+            cedula: "40213932124",
+            phones: [{number: "8091524485", type: "Movil"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
+        },
+        {
+            name: "Josue Alberto",
+            lastName: "Herrera Martinez",
+            matricula: "1161427",
+            career: "2",
+            recinto: "4",
+
+            email: "joherrera@gmail.com",
+            cedula: "40213907534",
+            phones: [{number: "8096643234", type: "Movil"}],
+            address: {
+                fullAddress: "Av estrella sadhalá",
+                city: "Santiago",
+                province: "Santiago de los caballeros",
+                country: "República Dominicana"
+            } 
+        },
         
 
     ]
@@ -60,7 +94,6 @@ exports.pushStudents = async (req, res, next) => { //DONE
                 }
                
            } catch (errorCode) {
-            console.log(errorCode)
             continue;
             /** 
             return res.status(200).json({
@@ -84,7 +117,7 @@ exports.pushCareers = async (req, res, next) => { //DONE
 
     const defaultCareers = [
         {
-            name: "Ingeniería en Sistemas Computacionales",
+            name: "Sistemas Computacionales",
             type: "Arquitectura e Ingeniería",
         },
         {

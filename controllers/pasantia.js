@@ -163,9 +163,8 @@ exports.requestNoBempPasantia = async (req, res) => {
         try {
             await execProcedure(`insertRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}',
                                                     '${requestData.tutorName}', '${studentId}', ${requestData.receiptNumber}, 
-                                                    '1', '${requestStatus}');`);
+                                                    '1', '${requestStatus}', '${requestData.cargo}');`);
         } catch (errorCode) {
-            console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -210,9 +209,8 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
         // UPDATE REQUEST SOlicitud  
 
         try {
-            await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}');`);
+            await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}', '${requestData.cargo}');`);
         } catch (errorCode) {
-            console.log(errorCode)
             return res.status(200).json({
                 success: false,
                 data: {
@@ -254,9 +252,9 @@ exports.getStudentNoBempRequest = async (req, res) => { //DONE
             }else{
                 
                 //theres a company within
-                const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.numrecibo as receiptNumber, 
+                const reqData = await getQueryDB(`select s.idsolicitud as reqId,
                 t.nombre as name, e.tipo as type, tel.telefono as phone, d.linea1 as address, 
-                (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from solicitudes as s 
+                (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName, re.cargo, s.numrecibo as receiptNumber from solicitudes as s 
                 join terceros as t on t.idtercero = s.idempresa
                 join empresas as e on e.idempresa = s.idempresa
                 join telefonos_terceros as tt on tt.idtercero = s.idempresa

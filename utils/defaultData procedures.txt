@@ -100,7 +100,7 @@
 
 
 DELIMITER &&  
-CREATE PROCEDURE insertRequestData (IN nombrer varchar(255), IN tipor varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN idestudianter int, IN numrecibor varchar(255), IN firmar TINYINT, IN estador varchar(255))  
+CREATE PROCEDURE insertRequestData (IN nombrer varchar(255), IN tipor varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN idestudianter int, IN numrecibor varchar(255), IN firmar TINYINT, IN estador varchar(255), IN cargor varchar(255))  
 BEGIN  
 
     insert into terceros (`nombre`) values (nombrer); 
@@ -114,7 +114,7 @@ BEGIN
     insert into personas (`idpersona`) values (@terIdRep); 
 
 
-    insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+    insert into representantes_empresas (`idrepresentante`, `idempresa`, `cargo`) values (@terIdRep, @terId, cargor);
 
     insert into telefonos (`telefono`) values (telefonor);
     SET @telId = LAST_INSERT_ID();
@@ -143,7 +143,7 @@ DELIMITER &&
 CREATE PROCEDURE updateRequestData (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255),
                 IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
                 IN numrecibor varchar(255), IN estador varchar(255),
-                IN idsolicitudr int)  
+                IN idsolicitudr int, IN cargor varchar(255))  
 BEGIN  
 	set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitudr);
     IF @idempresa IS NULL THEN BEGIN
@@ -158,7 +158,7 @@ BEGIN
         insert into personas (`idpersona`) values (@terIdRep); 
 
 
-        insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+        insert into representantes_empresas (`idrepresentante`, `idempresa`, `cargo`) values (@terIdRep, @terId, cargor);
 
         insert into telefonos (`telefono`) values (telefonoEmpresa);
         SET @telId = LAST_INSERT_ID();
@@ -181,6 +181,7 @@ BEGIN
 
             set @idrep = (select idrepresentante from representantes_empresas where idempresa = @idempresa);
             UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
+            UPDATE `representantes_empresas` SET `cargo` = cargor WHERE idrepresentante = @idrep;
 
             set @idtel = (select idtelefono from telefonos_terceros where idtercero = @idempresa);
             UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;
@@ -232,7 +233,7 @@ DELIMITER ;
 
 
 DELIMITER &&  
-CREATE PROCEDURE insertCompanyBemp (IN nombrer varchar(255), IN tipor varchar(255), IN actividadr varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255))  
+CREATE PROCEDURE insertCompanyBemp (IN nombrer varchar(255), IN tipor varchar(255), IN actividadr varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN cargor varchar(255))  
 BEGIN  
 
     insert into terceros (`nombre`) values (nombrer); 
@@ -246,7 +247,7 @@ BEGIN
     insert into personas (`idpersona`) values (@terIdRep); 
 
 
-    insert into representantes_empresas (`idrepresentante`, `idempresa`) values (@terIdRep, @terId);
+    insert into representantes_empresas (`idrepresentante`, `idempresa`, `cargo`) values (@terIdRep, @terId, cargor);
 
     insert into telefonos (`telefono`) values (telefonor);
     SET @telId = LAST_INSERT_ID();
@@ -269,7 +270,7 @@ DELIMITER ;
 DELIMITER &&  
 CREATE PROCEDURE updateCompanyBemp (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255), IN actividadEmpresa varchar(255),
                 IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
-                IN idempresar INT)  
+                IN idempresar INT, IN cargor varchar(255))  
 BEGIN  
 
 
@@ -278,6 +279,7 @@ BEGIN
 
     set @idrep = (select idrepresentante from representantes_empresas where idempresa = idempresar);
     UPDATE `terceros` SET `nombre` = encargadoEmpresa WHERE idtercero = @idrep;
+    UPDATE `representantes_empresas` SET `cargo` = cargor WHERE idrepresentante = @idrep;
 
     set @idtel = (select idtelefono from telefonos_terceros where idtercero = idempresar);
     UPDATE `telefonos` SET `telefono` = telefonoEmpresa WHERE idtelefono = @idtel;

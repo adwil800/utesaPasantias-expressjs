@@ -143,12 +143,15 @@ exports.getVacantSkills = async (req, res) => {
         })
 
     } catch (error) {
-        res.status(200).json({
+         res.status(200).json({
             success: false,
-            data: {}
+            data: {
+                    error: errorMessage(error.errno),
+                    message: error.sqlMessage
+                }
         });
+        
     }
-    
        
         
 };
@@ -168,22 +171,24 @@ exports.addBempCompany = async (req, res) => {//DONE
 
         try {
             await execProcedure(`insertCompanyBemp('${requestData.name}', '${requestData.type}', '${requestData.about}', '${requestData.phone}', '${requestData.address}',
-                                                    '${requestData.tutorName}');`);
-        } catch (errorCode) {
-            return res.status(200).json({
+                                                    '${requestData.tutorName}', '${requestData.cargo}');`);
+                
+            res.status(201).json({
+                success: true,
+                data: {}
+            });
+
+        } catch (error) {
+             res.status(200).json({
                 success: false,
                 data: {
-                        error: errorMessage(errorCode.errno),
-                        message: errorCode
+                        error: errorMessage(error.errno),
+                        message: error.sqlMessage
                     }
             });
             
         }
 
-    res.status(201).json({
-        success: true,
-        data: {}
-    });
 
 };
     
@@ -198,22 +203,24 @@ exports.updateBempCompany = async (req, res) => {//DONE
         // UPDATE REQUEST SOlicitud  
 
         try {
-            await execProcedure(`updateCompanyBemp('${requestData.name}', '${requestData.type}', '${requestData.about}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', '${companyId}');`);
-        } catch (errorCode) {
-            return res.status(200).json({
+            await execProcedure(`updateCompanyBemp('${requestData.name}', '${requestData.type}', '${requestData.about}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', '${companyId}', '${requestData.cargo}');`);
+           
+            res.status(200).json({
+                success: true,
+                data: {}
+            });
+        } catch (error) {
+                
+            res.status(200).json({
                 success: false,
                 data: {
-                        error: errorMessage(errorCode.errno),
-                        message: errorCode
+                    error: errorMessage(error.errno),
+                    message: error.sqlMessage
                     }
             });
             
         }
-        
-        res.status(200).json({
-            success: true,
-            data: {}
-        });
+     
     
 };
  
@@ -221,7 +228,7 @@ exports.getBempCompanies = async (req, res) => { //DONE
     
     try {
 
-        const reqData = await getQueryDB(`select e.idempresa as id, t.nombre as name, e.tipo as type, e.actividad as about, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName from terceros as t join empresas as e on e.idempresa = t.idtercero
+        const reqData = await getQueryDB(`select e.idempresa as id,  t.nombre as name, e.tipo as type, tel.telefono as phone, d.linea1 as address, (select nombre from terceros where idtercero =  re.idrepresentante) as tutorName, re.cargo, e.actividad as about from terceros as t join empresas as e on e.idempresa = t.idtercero
                                         join telefonos_terceros as tt on tt.idtercero = e.idempresa
                                         join telefonos as tel on tel.idtelefono = tt.idtelefono
                                         join direcciones_terceros as dt on dt.idtercero = e.idempresa
@@ -246,7 +253,10 @@ exports.getBempCompanies = async (req, res) => { //DONE
     } catch (error) {
         res.status(200).json({
             success: false,
-            data: {}
+            data: {
+                error: errorMessage(error.errno),
+                message: error.sqlMessage
+                }
         });
     }
   
@@ -264,21 +274,23 @@ exports.addStudentSkill = async (req, res) => { //DONE
     
     try {
         await queryDB(`insert into aptitudes_estudiantes (idhabilidad, idestudiante) values ('${skillId}', '${studentId}');`);
-    } catch (errorCode) {
-        return res.status(200).json({
+    
+        res.status(200).json({
+            success: true,
+            data: {}
+        })
+
+    } catch (error) {
+         res.status(200).json({
             success: false,
             data: {
-                error: errorMessage(errorCode.errno),
-                message: errorCode.sqlMessage
+                error: errorMessage(error.errno),
+                message: error.sqlMessage
                 }
         });
     }
 
 
-    res.status(200).json({
-        success: true,
-        data: {}
-    })
 };
 
 exports.removeStudentSkills = async (req, res) => { //DONE
@@ -310,7 +322,7 @@ exports.getStudentSkills = async (req, res) => { //DONE
     const {studentId} = req.query;
 
     try {
-        const skills = await getQueryDB(`select idhabilidad as skillId from aptitudes_estudiantes where idestudiante = '${studentId}'`);
+        const skills = await getQueryDB(`select ae.idhabilidad as skillId, a.nombre as skillName from aptitudes_estudiantes as ae join aptitudes as a on ae.idhabilidad = a.idhabilidad where idestudiante = '${studentId}'`);
 
         return res.status(200).json({
             success: true,
@@ -397,9 +409,12 @@ exports.getVacantsByCampusCareer = async (req, res) => { //DONE
         })
 
     } catch (error) {
-        res.status(200).json({
+         res.status(200).json({
             success: false,
-            data: {}
+            data: {
+                    error: errorMessage(error.errno),
+                    message: error.sqlMessage
+                }
         });
     }
 
