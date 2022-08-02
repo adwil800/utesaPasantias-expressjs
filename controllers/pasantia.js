@@ -1,5 +1,86 @@
 const { getQueryDB, queryDB, execProcedure} = require("../config/db");
 
+
+//Solicitudes admin
+
+
+
+exports.getNoBempRequests = async (req, res) => { //DONE
+    try {
+            const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.idestudiante as studentId, est.matricula,
+                                                 t.nombre as studentName, p.apellido as studentLastName,
+                                                 s.idempresa as companyId, te.nombre as companyName, 
+                                                 s.numrecibo as receiptNumber, s.fecha as reqDate from solicitudes as s
+                                                 join adicionales_estudiantes as ae on ae.idestudiante = s.idestudiante
+                                                 join estudiantes as est on est.idestudiante = s.idestudiante
+                                                 join terceros as t on t.idtercero = s.idestudiante
+                                                 join personas as p on p.idpersona = s.idestudiante
+                                                 join terceros as te on te.idtercero = s.idempresa
+                                                    where s.estado = 'pending' and ae.bolsaempleos = 0;`);
+            
+            return res.status(200).json({
+                success: true,
+                data: reqData
+            })
+            
+    } catch (error) {
+        res.status(200).json({
+
+            success: false,
+            data: {}
+    
+        });
+    }
+}
+
+
+exports.getBempRequests = async (req, res) => { //DONE
+    try {
+            const reqData = await getQueryDB(`select s.idsolicitud as reqId, s.idestudiante as studentId, est.matricula,
+                                                t.nombre as studentName, p.apellido as studentLastName,
+                                                s.numrecibo as receiptNumber, s.fecha as reqDate from solicitudes as s
+                                                join adicionales_estudiantes as ae on ae.idestudiante = s.idestudiante
+                                                join estudiantes as est on est.idestudiante = s.idestudiante
+                                                join terceros as t on t.idtercero = s.idestudiante
+                                                join personas as p on p.idpersona = s.idestudiante
+                                                where s.estado = 'pending' and ae.bolsaempleos = 1;`);
+            
+            return res.status(200).json({
+                success: true,
+                data: reqData
+            })
+            
+    } catch (error) {
+        res.status(200).json({
+
+            success: false,
+            data: {}
+    
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Request bemp
 exports.requestBempPasantia = async (req, res) => {
 
@@ -22,9 +103,9 @@ exports.requestBempPasantia = async (req, res) => {
 
         try {
             if(receiptNumber === null)
-            await execProcedure(`insertBempRequestData('${studentId}', ${receiptNumber}, '1', '${requestStatus}');`);
+            await execProcedure(`insertBempRequestData('${studentId}', ${receiptNumber}, '1', '${requestStatus}', NULL);`);
             else
-            await execProcedure(`insertBempRequestData('${studentId}', '${receiptNumber}', '1', '${requestStatus}');`);
+            await execProcedure(`insertBempRequestData('${studentId}', '${receiptNumber}', '1', '${requestStatus}', '${getToday()}');`);
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -64,9 +145,9 @@ exports.updateRequestBempPasantia = async (req, res) => {
 
         try {
             if(receiptNumber === null)
-            await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}');`);
+            await execProcedure(`updateBempRequestData('${requestId}', ${receiptNumber}, '${requestStatus}', NULL);`);
             else
-            await execProcedure(`updateBempRequestData('${requestId}', '${receiptNumber}', '${requestStatus}');`);
+            await execProcedure(`updateBempRequestData('${requestId}', '${receiptNumber}', '${requestStatus}', '${getToday()}');`);
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -93,7 +174,7 @@ exports.getStudentBempRequest = async (req, res) => { //DONE
         const reqData = await getQueryDB(`select idsolicitud as reqId from solicitudes where idestudiante = '${studentId}';`);
         return res.status(200).json({
             success: true,
-            data: reqData[0]
+            data: reqData[0] || []
         })
 
     } catch (error) {
@@ -113,21 +194,25 @@ exports.getStudentBempRequest = async (req, res) => { //DONE
 //returns user to onHold status
 exports.removeStudentBemp = async (req, res) => { //DONE
     const {isBemp, studentId} = req.body;
-    const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
-    const updateRequest = await queryDB(`UPDATE solicitudes set estado = 'onHold' where idestudiante = '${studentId}';`);
-
-    if(updateBemp.success && updateRequest.success){
+   
+    try {
+        
+        await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
+        await queryDB(`UPDATE solicitudes set estado = 'onHold', fecha = NULL where idestudiante = '${studentId}';`);
         return res.status(200).json({
             success: true,
             data: {}
         });
-    }
-
-    res.status(200).json({
-        success: true,
-        data: "Algo salió mal"
-    });
-
+    } catch (error) {
+        return res.status(200).json({
+            success: false,
+            data: {
+                    error: errorMessage(error.errno),
+                    message: error
+                }
+        });
+        
+    } 
 };
 
 
@@ -158,12 +243,19 @@ exports.requestNoBempPasantia = async (req, res) => {
 
     if(requestData.type.trim() === "Otras"){
         requestData.type = requestData.otherType;
-    }
-
+    } 
         try {
+            if(requestData.receiptNumber === null){
             await execProcedure(`insertRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}',
                                                     '${requestData.tutorName}', '${studentId}', ${requestData.receiptNumber}, 
-                                                    '1', '${requestStatus}', '${requestData.cargo}');`);
+                                                    '1', '${requestStatus}', '${requestData.cargo}', NULL);`);
+            }
+            else{
+                
+                await execProcedure(`insertRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}',
+                '${requestData.tutorName}', '${studentId}', '${requestData.receiptNumber}', 
+                '1', '${requestStatus}', '${requestData.cargo}', '${getToday()}');`);
+            }
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -199,17 +291,24 @@ exports.updateRequestNoBempPasantia = async (req, res) => {
     
         }else{
             requestStatus = "pending";
-            requestData.receiptNumber = `'${requestData.receiptNumber}'`;
         }
     
         if(requestData.type.trim() === "Otras"){
             requestData.type = requestData.otherType;
         }
     
-        // UPDATE REQUEST SOlicitud  
-
+        // UPDATE REQUEST SOlicitud 
         try {
-            await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}', '${requestData.cargo}');`);
+            if(requestData.receiptNumber === null){
+                await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', 
+                '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', 
+                ${requestData.receiptNumber}, '${requestStatus}', '${requestData.reqId}', '${requestData.cargo}', NULL);`);
+            }
+            else{
+                await execProcedure(`updateRequestData('${requestData.name}', '${requestData.type}', 
+                '${requestData.phone}', '${requestData.address}', '${requestData.tutorName}', 
+                '${requestData.receiptNumber}', '${requestStatus}', '${requestData.reqId}', '${requestData.cargo}', '${getToday()}' );`);
+            }
         } catch (errorCode) {
             return res.status(200).json({
                 success: false,
@@ -265,7 +364,7 @@ exports.getStudentNoBempRequest = async (req, res) => { //DONE
                 where idestudiante = '${studentId}';`);
                 
                 if(!reqData[0].receiptNumber) reqData[0].receiptNumber = ""; 
-
+                reqData[0]["otherType"] = reqData[0].type;
                 return res.status(200).json({
                     success: true,
                     data: reqData[0]
@@ -282,7 +381,6 @@ exports.getStudentNoBempRequest = async (req, res) => { //DONE
         res.status(200).json({
 
             success: false,
-            noReq: true,
             data: {}
     
         });
@@ -387,38 +485,58 @@ exports.getStudentInformation = async (req, res) => { //DONE
 
 exports.updateStudentBemp = async (req, res) => { //DONE
     const {isBemp, studentId} = req.body;
-    const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
 
+    try {
+        
+        const updateBemp = await queryDB(`UPDATE adicionales_estudiantes set bolsaempleos = '${Number(isBemp)}' where idestudiante = '${studentId}';`);
+            
+        if(updateBemp.success){
+            //If had no bemp and wants to add it, remove company and representative if exists
+            if(isBemp){ 
+                //GOT TO COME BACK HERE, THE COMPANIES REGISTERED BY STUDENTS ARE STILL IN WITH THEIR RESPECTIVE REPS, HANDLE
+                //Remove company relationship with request
+                await queryDB(`UPDATE solicitudes set idempresa = NULL where idestudiante = '${studentId}';`);
+            }
 
-    if(updateBemp.success){
+        }
         return res.status(200).json({
             success: true,
             data: {}
         });
-    }
-
-    res.status(200).json({
-        success: true,
-        data: "Algo salió mal"
-    });
+    } catch (error) {
+        return res.status(200).json({
+            success: false,
+            data: {
+                    error: errorMessage(error.errno),
+                    message: error
+                }
+        });
+        
+    } 
 
 };
 
 exports.updateStudentTpasantia = async (req, res) => { //DONE
     const {tipopasantia, studentId} = req.body;
-    const updateTpasantia = await queryDB(`UPDATE adicionales_estudiantes set tipopasantia = '${tipopasantia}' where idestudiante = '${studentId}';`);
 
-    if(updateTpasantia.success){
+    
+    try {
+        
+        await queryDB(`UPDATE adicionales_estudiantes set tipopasantia = '${tipopasantia}' where idestudiante = '${studentId}';`);
         return res.status(200).json({
             success: true,
             data: {}
         });
-    }
-
-    res.status(200).json({
-        success: true,
-        data: "Algo salió mal"
-    });
+    } catch (error) {
+        return res.status(200).json({
+            success: false,
+            data: {
+                    error: errorMessage(error.errno),
+                    message: error
+                }
+        });
+        
+    } 
 };
 
 
@@ -432,4 +550,9 @@ function errorMessage(errorCode){
 
         default: return "Error del servidor";
     }
+}
+function getToday(){
+    const today = new Date(); 
+    const dateTime = today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate() +" "+ today.getHours()+":"+today.getMinutes()+":"+today.getSeconds();
+    return dateTime;
 }

@@ -100,7 +100,7 @@
 
 
 DELIMITER &&  
-CREATE PROCEDURE insertRequestData (IN nombrer varchar(255), IN tipor varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN idestudianter int, IN numrecibor varchar(255), IN firmar TINYINT, IN estador varchar(255), IN cargor varchar(255))  
+CREATE PROCEDURE insertRequestData (IN nombrer varchar(255), IN tipor varchar(255), IN telefonor varchar(255), IN direccionr varchar(255), IN encargador varchar(255), IN idestudianter int, IN numrecibor varchar(255), IN firmar TINYINT, IN estador varchar(255), IN cargor varchar(255), IN fechar datetime)  
 BEGIN  
 
     insert into terceros (`nombre`) values (nombrer); 
@@ -127,7 +127,7 @@ BEGIN
     insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
 
 
-    insert into solicitudes(`idestudiante`, `idempresa`, `numrecibo`, `firma`, `estado`) values (idestudianter, @terId, numrecibor, firmar, estador);
+    insert into solicitudes(`idestudiante`, `idempresa`, `numrecibo`, `firma`, `estado`, `fecha`) values (idestudianter, @terId, numrecibor, firmar, estador, fechar);
 
 
 END &&  
@@ -143,7 +143,7 @@ DELIMITER &&
 CREATE PROCEDURE updateRequestData (IN nombreEmpresa varchar(255), IN tipoEmpresa varchar(255),
                 IN telefonoEmpresa varchar(255), IN direccionEmpresa varchar(255), IN encargadoEmpresa varchar(255), 
                 IN numrecibor varchar(255), IN estador varchar(255),
-                IN idsolicitudr int, IN cargor varchar(255))  
+                IN idsolicitudr int, IN cargor varchar(255), IN fechar datetime)  
 BEGIN  
 	set @idempresa = (select idempresa from solicitudes where idsolicitud = idsolicitudr);
     IF @idempresa IS NULL THEN BEGIN
@@ -170,7 +170,7 @@ BEGIN
         SET @dirId = LAST_INSERT_ID();
         insert into direcciones_terceros(`iddireccion`, `idtercero`) values (@dirId, @terId);
 
-        UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador, `idempresa` = @terId WHERE idsolicitud = idsolicitudr;
+        UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador, `idempresa` = @terId, `fecha` = fechar WHERE idsolicitud = idsolicitudr;
 
     END;
     ELSE
@@ -196,7 +196,7 @@ BEGIN
 
 
     
-    UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador WHERE idsolicitud = idsolicitudr;
+    UPDATE `solicitudes` SET `numrecibo` = numrecibor,`estado` = estador,  `fecha` = fechar WHERE idsolicitud = idsolicitudr;
 
 END && 
 DELIMITER ;  
@@ -209,18 +209,18 @@ DELIMITER ;
 
 
 DELIMITER &&  
-CREATE PROCEDURE insertBempRequestData (IN idestudianter int, numrecibor varchar(255), firmar TINYINT, estador varchar(255))  
+CREATE PROCEDURE insertBempRequestData (IN idestudianter int, numrecibor varchar(255), firmar TINYINT, IN estador varchar(255), IN fechar datetime)  
 BEGIN  
-    insert into solicitudes (`idestudiante`, `numrecibo`,  `firma`, `estado`) values (idestudianter, numrecibor, firmar, estador);
+    insert into solicitudes (`idestudiante`, `numrecibo`,  `firma`, `estado`, `fecha`) values (idestudianter, numrecibor, firmar, estador, fechar);
 END &&  
 DELIMITER ;  
 
 
 
 DELIMITER &&  
-CREATE PROCEDURE updateBempRequestData (IN idsolicitudr int, numrecibor varchar(255), estador varchar(255))  
+CREATE PROCEDURE updateBempRequestData (IN idsolicitudr int, IN numrecibor varchar(255), IN estador varchar(255), IN fechar datetime)  
 BEGIN  
-    UPDATE `solicitudes` SET `numrecibo` = numrecibor, `estado` = estador WHERE idsolicitud = idsolicitudr;
+    UPDATE `solicitudes` SET `numrecibo` = numrecibor, `estado` = estador, `fecha` = fechar WHERE idsolicitud = idsolicitudr;
 END &&  
 DELIMITER ;  
 
@@ -299,3 +299,7 @@ DELIMITER ;
 
 
 
+
+
+
+ 

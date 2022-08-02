@@ -97,7 +97,8 @@ CREATE TABLE solicitudes(
     FOREIGN KEY(idempresa) REFERENCES empresas(idempresa),
     numrecibo varchar(255),
     firma TINYINT,
-    estado VARCHAR(255)
+    estado VARCHAR(255),
+    fecha date
 ); CREATE TABLE revisiones_solicitudes(
     idrevisionsolicitud INT PRIMARY KEY AUTO_INCREMENT,
     idsolicitud INT,

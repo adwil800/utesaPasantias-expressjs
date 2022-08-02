@@ -428,3 +428,29 @@ exports.testRoute = async (req, res, next) => { //DONE
     });
 };
  
+
+
+const defaultBempCompanies =
+[
+
+    {
+        cName: "Nombre de la compañia",
+        cType: "Industrial", //Industrial, De servicios, Comercio, Pública, Privada, (Otras: lo que sea): De vida o muerte 
+        cPhone: "Teléfono de la compañia",
+        cAddress: "Dirección x en y",
+        cTutorName: "Nombre del encargado",
+        cTutorCargo: "Cargo del encargado",
+        cAbout: "Actividad de la compañia, de qué va",
+        cVacants: [
+            {
+                vCampus: "Recinto de la vacante",
+                vCareer: "Carrera de la vacante",
+                vName: "Nombre de la vacante",
+                vDesc: "Descripción de la vacante",
+                vSkills: ["Habilidades de la vacante (No llenar)"]
+            }
+        ]
+
+    },
+
+]

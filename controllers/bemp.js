@@ -368,20 +368,23 @@ exports.getStudentSkill = async (req, res) => { //DONE
 
 
 //v assignation
-exports.getBempStudents = async (req, res) => { //DONE
+exports.getBempStudent = async (req, res) => { //DONE
+
+    const { studentId } = req.query;
 
     try {
-        const students = await getQueryDB(`  select e.idestudiante as studentId, e.matricula, t.nombre as studentName, p.apellido as studentLastName,
+        const student = await getQueryDB(`  select e.idestudiante as studentId, e.matricula, t.nombre as studentName, p.apellido as studentLastName,
                                              e.idcarrera as careerId, t1.nombre as careerName, e.idrecinto as campusId, t2.nombre as campusName from estudiantes as e 
                                              join terceros as t on t.idtercero = e.idestudiante
                                              join terceros as t1 on t1.idtercero = e.idcarrera
                                              join terceros as t2 on t2.idtercero = e.idrecinto
                                              join personas as p on p.idpersona = e.idestudiante
-                                             join adicionales_estudiantes as ae on ae.idestudiante = e.idestudiante where ae.bolsaempleos = 1;`);
+                                             join adicionales_estudiantes as ae on ae.idestudiante = e.idestudiante where ae.bolsaempleos = 1 
+                                             and e.idestudiante  = '${studentId}';`); //Added to get single student
 
         return res.status(200).json({
             success: true,
-            data: students
+            data: student[0] || {}
         })
 
     } catch (error) {

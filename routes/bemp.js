@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router({mergeParams: true});
 
 const { addStudentSkill, removeStudentSkills, getStudentSkills, getStudentSkill, 
-        updateBempCompany, addBempCompany, getBempCompanies, getBempStudents,
+        updateBempCompany, addBempCompany, getBempCompanies, getBempStudent,
         addCompanyVacant, getCompanyVacants, updateCompanyVacant, addVacantSkill,
         removeVacantSkill, getVacantSkills, getVacantsByCampusCareer} = require("../controllers/bemp");
 
@@ -26,7 +26,7 @@ router.route("/vacants/vacantskills").get(getVacantSkills)
 
 //Vacant assignation
 router.route("/vacants/filtered").get(getVacantsByCampusCareer);
-router.route("/bempstudents").get(getBempStudents);
+router.route("/bempstudent").get(getBempStudent);
 
 
 module.exports = router;
